@@ -1,12 +1,12 @@
-import { cookies } from 'next/headers';
-import { notFound } from 'next/navigation';
+import { cookies } from "next/headers";
+import { notFound } from "next/navigation";
 
-import { auth } from '@/app/(auth)/auth';
-import { Chat } from '@/components/chat';
-import { getChatById, getMessagesByChatId } from '@/lib/db/queries';
-import { convertToUIMessages } from '@/lib/utils';
-import { DataStreamHandler } from '@/components/data-stream-handler';
-import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
+import { auth } from "@/app/(auth)/auth";
+import { Chat } from "@/components/chat";
+import { getChatById, getMessagesByChatId } from "@/lib/db/queries";
+import { convertToUIMessages } from "@/lib/utils";
+import { DataStreamHandler } from "@/components/data-stream-handler";
+import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -19,12 +19,12 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const session = await auth();
 
-  if (chat.visibility === 'private') {
+  if (chat.visibility === "private") {
     if (!session || !session.user) {
       return notFound();
     }
 
-    if (session.user.id !== chat.userId) {
+    if (session.user.email !== chat.userId) {
       return notFound();
     }
   }
@@ -34,7 +34,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   });
 
   const cookieStore = await cookies();
-  const chatModelFromCookie = cookieStore.get('chat-model');
+  const chatModelFromCookie = cookieStore.get("chat-model");
 
   if (!chatModelFromCookie) {
     return (
@@ -44,7 +44,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           initialMessages={convertToUIMessages(messagesFromDb)}
           selectedChatModel={DEFAULT_CHAT_MODEL}
           selectedVisibilityType={chat.visibility}
-          isReadonly={session?.user?.id !== chat.userId}
+          isReadonly={session?.user?.email !== chat.userId}
         />
         <DataStreamHandler id={id} />
       </>
@@ -58,7 +58,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         initialMessages={convertToUIMessages(messagesFromDb)}
         selectedChatModel={chatModelFromCookie.value}
         selectedVisibilityType={chat.visibility}
-        isReadonly={session?.user?.id !== chat.userId}
+        isReadonly={session?.user?.email !== chat.userId}
       />
       <DataStreamHandler id={id} />
     </>

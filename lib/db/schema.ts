@@ -1,116 +1,68 @@
-import type { InferSelectModel } from 'drizzle-orm';
-import {
-  pgTable,
-  varchar,
-  timestamp,
-  json,
-  uuid,
-  text,
-  primaryKey,
-  foreignKey,
-  boolean,
-} from 'drizzle-orm/pg-core';
-import { blockKinds } from '../blocks/server';
+"use server";
 
-export const user = pgTable('User', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  email: varchar('email', { length: 64 }).notNull(),
-  password: varchar('password', { length: 64 }),
+import mongoose from "mongoose";
+
+const { Schema } = mongoose;
+
+if (!mongoose.connection.readyState) {
+  mongoose.connect(process.env.MONGO_URI!);
+}
+
+// User Schema
+const UserSchema = new Schema({
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
 });
 
-export type User = InferSelectModel<typeof user>;
-
-export const chat = pgTable('Chat', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  createdAt: timestamp('createdAt').notNull(),
-  title: text('title').notNull(),
-  userId: uuid('userId')
-    .notNull()
-    .references(() => user.id),
-  visibility: varchar('visibility', { enum: ['public', 'private'] })
-    .notNull()
-    .default('private'),
+// Chat Schema
+const ChatSchema = new Schema({
+  id: { type: String, required: true, unique: true },
+  createdAt: { type: Date, default: Date.now },
+  userId: { type: String, required: true },
+  title: { type: String, required: true },
+  visibility: { type: String, enum: ["private", "public"], default: "private" },
 });
 
-export type Chat = InferSelectModel<typeof chat>;
-
-export const message = pgTable('Message', {
-  id: uuid('id').primaryKey().notNull().defaultRandom(),
-  chatId: uuid('chatId')
-    .notNull()
-    .references(() => chat.id),
-  role: varchar('role').notNull(),
-  content: json('content').notNull(),
-  createdAt: timestamp('createdAt').notNull(),
+// Message Schema
+const MessageSchema = new Schema({
+  id: { type: String, required: true, unique: true },
+  chatId: { type: String, required: true },
+  role: { type: String, required: true }, // Added role field
+  content: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
 });
 
-export type Message = InferSelectModel<typeof message>;
+// Vote Schema
+const VoteSchema = new Schema({
+  chatId: { type: String, required: true },
+  messageId: { type: String, required: true },
+  isUpvoted: { type: Boolean, required: true },
+});
 
-export const vote = pgTable(
-  'Vote',
-  {
-    chatId: uuid('chatId')
-      .notNull()
-      .references(() => chat.id),
-    messageId: uuid('messageId')
-      .notNull()
-      .references(() => message.id),
-    isUpvoted: boolean('isUpvoted').notNull(),
-  },
-  (table) => {
-    return {
-      pk: primaryKey({ columns: [table.chatId, table.messageId] }),
-    };
-  },
-);
+// Document Schema
+const DocumentSchema = new Schema({
+  id: { type: String, required: true, unique: true },
+  title: { type: String, required: true },
+  kind: { type: String, required: true },
+  content: { type: String, required: true },
+  userId: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
+});
 
-export type Vote = InferSelectModel<typeof vote>;
+// Suggestion Schema
+const SuggestionSchema = new Schema({
+  documentId: { type: String, required: true },
+  documentCreatedAt: { type: Date, required: true },
+  content: { type: String, required: true },
+});
 
-export const document = pgTable(
-  'Document',
-  {
-    id: uuid('id').notNull().defaultRandom(),
-    createdAt: timestamp('createdAt').notNull(),
-    title: text('title').notNull(),
-    content: text('content'),
-    kind: varchar('text', { enum: ['text', 'code', 'image', 'sheet'] })
-      .notNull()
-      .default('text'),
-    userId: uuid('userId')
-      .notNull()
-      .references(() => user.id),
-  },
-  (table) => {
-    return {
-      pk: primaryKey({ columns: [table.id, table.createdAt] }),
-    };
-  },
-);
-
-export type Document = InferSelectModel<typeof document>;
-
-export const suggestion = pgTable(
-  'Suggestion',
-  {
-    id: uuid('id').notNull().defaultRandom(),
-    documentId: uuid('documentId').notNull(),
-    documentCreatedAt: timestamp('documentCreatedAt').notNull(),
-    originalText: text('originalText').notNull(),
-    suggestedText: text('suggestedText').notNull(),
-    description: text('description'),
-    isResolved: boolean('isResolved').notNull().default(false),
-    userId: uuid('userId')
-      .notNull()
-      .references(() => user.id),
-    createdAt: timestamp('createdAt').notNull(),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.id] }),
-    documentRef: foreignKey({
-      columns: [table.documentId, table.documentCreatedAt],
-      foreignColumns: [document.id, document.createdAt],
-    }),
-  }),
-);
-
-export type Suggestion = InferSelectModel<typeof suggestion>;
+// Export Models
+export const User = mongoose.models.User || mongoose.model("User", UserSchema);
+export const Chat = mongoose.models.Chat || mongoose.model("Chat", ChatSchema);
+export const Message =
+  mongoose.models.Message || mongoose.model("Message", MessageSchema);
+export const Vote = mongoose.models.Vote || mongoose.model("Vote", VoteSchema);
+export const Document =
+  mongoose.models.Document || mongoose.model("Document", DocumentSchema);
+export const Suggestion =
+  mongoose.models.Suggestion || mongoose.model("Suggestion", SuggestionSchema);

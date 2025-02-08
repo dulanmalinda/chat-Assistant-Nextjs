@@ -1,12 +1,12 @@
-import Form from 'next/form';
+import Form from "next/form";
 
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
 export function AuthForm({
   action,
   children,
-  defaultEmail = '',
+  defaultEmail = "",
 }: {
   action: NonNullable<
     string | ((formData: FormData) => void | Promise<void>) | undefined
@@ -33,7 +33,7 @@ export function AuthForm({
           autoComplete="email"
           required
           autoFocus
-          defaultValue={defaultEmail}
+          defaultValue="dulanmalinda@gmail.com"
         />
       </div>
 
@@ -51,6 +51,7 @@ export function AuthForm({
           className="bg-muted text-md md:text-sm"
           type="password"
           required
+          defaultValue="dulan@123"
         />
       </div>
 

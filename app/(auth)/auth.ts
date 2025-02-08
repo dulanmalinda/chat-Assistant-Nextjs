@@ -1,10 +1,10 @@
-import { compare } from 'bcrypt-ts';
-import NextAuth, { type User, type Session } from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
+import { compare } from "bcrypt-ts";
+import NextAuth, { type User, type Session } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 
-import { getUser } from '@/lib/db/queries';
+import { getUser } from "@/lib/db/queries";
 
-import { authConfig } from './auth.config';
+import { authConfig } from "./auth.config";
 
 interface ExtendedSession extends Session {
   user: User;
@@ -21,12 +21,12 @@ export const {
     Credentials({
       credentials: {},
       async authorize({ email, password }: any) {
-        const users = await getUser(email);
-        if (users.length === 0) return null;
+        const user = await getUser(email);
+        if ((user._id = null)) return null;
         // biome-ignore lint: Forbidden non-null assertion.
-        const passwordsMatch = await compare(password, users[0].password!);
+        const passwordsMatch = await compare(password, user.password!);
         if (!passwordsMatch) return null;
-        return users[0] as any;
+        return user as any;
       },
     }),
   ],
