@@ -33,7 +33,6 @@ export function AuthForm({
           autoComplete="email"
           required
           autoFocus
-          defaultValue="dulanmalinda@gmail.com"
         />
       </div>
 
@@ -51,7 +50,6 @@ export function AuthForm({
           className="bg-muted text-md md:text-sm"
           type="password"
           required
-          defaultValue="dulan@123"
         />
       </div>
 
