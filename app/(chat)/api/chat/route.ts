@@ -26,6 +26,9 @@ import { updateDocument } from "@/lib/ai/tools/update-document";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 
+import { createWallet } from "@/lib/ai/tools/create-wallet";
+import { getWallets } from "@/lib/ai/tools/get-wallets";
+
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
@@ -86,6 +89,8 @@ export async function POST(request: Request) {
                   "createDocument",
                   "updateDocument",
                   "requestSuggestions",
+                  "createWallet",
+                  "getWallets",
                 ],
           experimental_transform: smoothStream({ chunking: "word" }),
           experimental_generateMessageId: generateUUID,
@@ -97,9 +102,16 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
+            createWallet: createWallet({
+              session,
+              wallet_name: "defaultWallet",
+            }),
+            getWallets: getWallets({
+              session,
+            }),
           },
           onFinish: async ({ response, reasoning }) => {
-            if (session.user?.id) {
+            if (session.user?.email) {
               try {
                 const sanitizedResponseMessages = sanitizeResponseMessages({
                   messages: response.messages,
