@@ -28,6 +28,7 @@ import { getWeather } from "@/lib/ai/tools/get-weather";
 
 import { createWallet } from "@/lib/ai/tools/create-wallet";
 import { getWallets } from "@/lib/ai/tools/get-wallets";
+import { setActiveWallet, getActiveWallet } from "@/lib/ai/tools/active-wallet";
 
 export const maxDuration = 60;
 
@@ -81,32 +82,39 @@ export async function POST(request: Request) {
           system: systemPrompt({ selectedChatModel }),
           messages,
           maxSteps: 5,
-          experimental_activeTools:
-            selectedChatModel === "chat-model-reasoning"
-              ? []
-              : [
-                  "getWeather",
-                  "createDocument",
-                  "updateDocument",
-                  "requestSuggestions",
-                  "createWallet",
-                  "getWallets",
-                ],
-          experimental_transform: smoothStream({ chunking: "word" }),
-          experimental_generateMessageId: generateUUID,
+          // experimental_activeTools:
+          //   selectedChatModel === "chat-model-reasoning"
+          //     ? []
+          //     : [
+          //         "getWeather",
+          //         "createDocument",
+          //         "updateDocument",
+          //         "requestSuggestions",
+          //         "createWallet",
+          //         "getWallets",
+          //         "setActiveWallet",
+          //         "getActiveWallet",
+          //       ],
+          // experimental_transform: smoothStream({ chunking: "word" }),
+          // experimental_generateMessageId: generateUUID,
           tools: {
-            getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
-            }),
+            // getWeather,
+            // createDocument: createDocument({ session, dataStream }),
+            // updateDocument: updateDocument({ session, dataStream }),
+            // requestSuggestions: requestSuggestions({
+            //   session,
+            //   dataStream,
+            // }),
             createWallet: createWallet({
               session,
-              wallet_name: "defaultWallet",
             }),
             getWallets: getWallets({
+              session,
+            }),
+            setActiveWallet: setActiveWallet({
+              session,
+            }),
+            getActiveWallet: getActiveWallet({
               session,
             }),
           },

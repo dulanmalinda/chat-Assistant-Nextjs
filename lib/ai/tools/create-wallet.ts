@@ -6,10 +6,9 @@ import crypto from "crypto";
 
 interface createWalletProps {
   session: Session;
-  wallet_name: string;
 }
 
-export const createWallet = ({ session, wallet_name }: createWalletProps) =>
+export const createWallet = ({ session }: createWalletProps) =>
   tool({
     description: "To create a new wallet",
     parameters: z.object({

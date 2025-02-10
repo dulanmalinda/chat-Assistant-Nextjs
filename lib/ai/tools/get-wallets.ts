@@ -30,8 +30,7 @@ export const getWallets = ({ session }: getWalletsProps) =>
   });
 
 const deriveKey = (session: Session) => {
-  if (!session?.user?.email)
-    throw new Error("User ID is required for key derivation");
+  if (!session?.user?.email) return "User ID is required for key derivation";
 
   const salt = process.env.ENCRYPTION_SALT || "default-salt";
   const key = crypto.pbkdf2Sync(session.user.email, salt, 100000, 32, "sha256");
@@ -50,12 +49,12 @@ const getWalletsApi = async (userId: string, userPassword: string) => {
     });
 
     if (!response.ok) {
-      throw new Error(`Error: ${response.status} ${response.statusText}`);
+      return `Error: ${response.status} ${response.statusText}`;
     }
 
     return await response.json();
   } catch (error) {
     console.error("Error fetching wallets:", error);
-    throw error;
+    return error;
   }
 };
