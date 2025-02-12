@@ -1,7 +1,7 @@
-import { motion } from 'framer-motion';
-import Link from 'next/link';
+import { motion } from "framer-motion";
+import Link from "next/link";
 
-import { MessageIcon, VercelIcon } from './icons';
+import { MessageIcon, VercelIcon } from "./icons";
 
 export const Overview = () => {
   return (
@@ -19,7 +19,7 @@ export const Overview = () => {
           <span>+</span>
           <MessageIcon size={32} />
         </p>
-        <p>
+        {/* <p>
           This is an{' '}
           <Link
             className="font-medium underline underline-offset-4"
@@ -34,9 +34,9 @@ export const Overview = () => {
           function in the server and the{' '}
           <code className="rounded-md bg-muted px-1 py-0.5">useChat</code> hook
           on the client to create a seamless chat experience.
-        </p>
-        <p>
-          You can learn more about the AI SDK by visiting the{' '}
+        </p> */}
+        {/* <p>
+          You can learn more about the AI SDK by visiting the{" "}
           <Link
             className="font-medium underline underline-offset-4"
             href="https://sdk.vercel.ai/docs"
@@ -45,7 +45,7 @@ export const Overview = () => {
             docs
           </Link>
           .
-        </p>
+        </p> */}
       </div>
     </motion.div>
   );
