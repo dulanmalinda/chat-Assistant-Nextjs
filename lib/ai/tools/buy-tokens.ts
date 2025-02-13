@@ -4,6 +4,8 @@ import { z } from "zod";
 
 import crypto from "crypto";
 
+import { checkWalletBalanceApi } from "./wallet-balance";
+
 interface buyTokensProps {
   session: Session;
 }
@@ -22,6 +24,15 @@ export const buyTokens = ({ session }: buyTokensProps) =>
       let buyTokensResponce = "";
 
       if (userId && userEncryptionKey) {
+        const balanceResponce = await checkWalletBalanceApi(
+          userId,
+          userEncryptionKey
+        );
+        if (Number(balanceResponce.balance) < 0.11) {
+          buyTokensResponce = `Your wallet balance is ${balanceResponce.balance} sol, which is less than 0.11 sol + buy amount. You need at least 0.11 sol + buy amount.`;
+          return buyTokensResponce;
+        }
+
         const responce = await buyTokensApi(
           userId,
           userEncryptionKey,

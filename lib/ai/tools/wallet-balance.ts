@@ -39,7 +39,10 @@ const deriveKey = (session: Session) => {
   return key.toString("hex");
 };
 
-const checkWalletBalanceApi = async (userId: string, userPassword: string) => {
+export const checkWalletBalanceApi = async (
+  userId: string,
+  userPassword: string
+) => {
   try {
     const response = await fetch("http://127.0.0.1:8000/wallet/balance", {
       method: "POST",

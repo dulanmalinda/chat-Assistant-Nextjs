@@ -4,6 +4,8 @@ import { z } from "zod";
 
 import crypto from "crypto";
 
+import { checkWalletBalanceApi } from "./wallet-balance";
+
 interface transferSolProps {
   session: Session;
 }
@@ -22,6 +24,15 @@ export const transferSol = ({ session }: transferSolProps) =>
       let transferSolResponce = "";
 
       if (userId && userEncryptionKey) {
+        const balanceResponce = await checkWalletBalanceApi(
+          userId,
+          userEncryptionKey
+        );
+        if (Number(balanceResponce.balance) <= amount) {
+          transferSolResponce = `Your wallet balance is ${balanceResponce.balance} sol, no funds to trasnfer.`;
+          return transferSolResponce;
+        }
+
         const responce = await transferSolApi(
           userId,
           userEncryptionKey,
