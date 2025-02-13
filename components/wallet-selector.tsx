@@ -44,48 +44,54 @@ export function WalletSelector({
   );
 
   useEffect(() => {
-    const fetchWallets = async () => {
-      try {
-        const response = await fetch("/api/available-wallets");
-        if (!response.ok) throw new Error("Failed to fetch wallets");
-        const data = await response.json();
-
-        if (
-          data.wallets &&
-          Array.isArray(data.wallets) &&
-          data.wallets.length > 0
-        ) {
-          const uniqueWallets = Array.from(
-            new Map(
-              data.wallets.map((wallet: any) => [wallet.wallet_name, wallet])
-            ).values()
-          ).map((wallet: any) => ({
-            name: wallet.wallet_name,
-            icon: <WalletIcon />,
-          }));
-          setAvailableWallets(uniqueWallets);
-
-          const activeWalletResponse = await fetch("/api/active-wallet");
-          if (!activeWalletResponse.ok)
-            throw new Error("Failed to fetch active wallet");
-          const activeWalletData = await activeWalletResponse.json();
-
-          _setWallet(activeWalletData.wallets.wallet_name);
-        } else {
-          setAvailableWallets([
-            {
-              name: "No wallet",
-              icon: <WalletIcon />,
-            },
-          ]);
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
     fetchWallets();
+
+    const interval = setInterval(() => {
+      fetchWallets();
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
+
+  const fetchWallets = async () => {
+    try {
+      const response = await fetch("/api/available-wallets");
+      if (!response.ok) throw new Error("Failed to fetch wallets");
+      const data = await response.json();
+
+      if (
+        data.wallets &&
+        Array.isArray(data.wallets) &&
+        data.wallets.length > 0
+      ) {
+        const uniqueWallets = Array.from(
+          new Map(
+            data.wallets.map((wallet: any) => [wallet.wallet_name, wallet])
+          ).values()
+        ).map((wallet: any) => ({
+          name: wallet.wallet_name,
+          icon: <WalletIcon />,
+        }));
+        setAvailableWallets(uniqueWallets);
+
+        const activeWalletResponse = await fetch("/api/active-wallet");
+        if (!activeWalletResponse.ok)
+          throw new Error("Failed to fetch active wallet");
+        const activeWalletData = await activeWalletResponse.json();
+
+        _setWallet(activeWalletData.wallets.wallet_name);
+      } else {
+        setAvailableWallets([
+          {
+            name: "No wallet",
+            icon: <WalletIcon />,
+          },
+        ]);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const setActiveWallet = async (wallet_name: string) => {
     try {
