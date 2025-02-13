@@ -147,16 +147,41 @@ export async function POST(request: Request) {
                 });
 
                 await saveMessages({
-                  messages: sanitizedResponseMessages.map((message) => ({
-                    id: generateUUID(),
-                    chatId: id,
-                    role: message.role,
-                    content:
-                      typeof message.content === "string"
-                        ? message.content
-                        : JSON.stringify(message.content),
-                    createdAt: new Date(),
-                  })),
+                  messages: sanitizedResponseMessages
+                    .filter(
+                      (message) =>
+                        !(
+                          Array.isArray(message.content) &&
+                          message.content.some(
+                            (item) =>
+                              item.type === "tool-call" ||
+                              item.type === "tool-result"
+                          )
+                        )
+                    ) // Exclude tool-call and tool-result messages
+                    .map((message) => ({
+                      id: generateUUID(),
+                      chatId: id,
+                      role: message.role,
+                      content:
+                        typeof message.content === "string"
+                          ? message.content
+                          : Array.isArray(message.content)
+                          ? message.content
+                              .filter(
+                                (item) =>
+                                  item.type !== "tool-call" &&
+                                  item.type !== "tool-result"
+                              ) // Exclude unwanted types
+                              .map((item) =>
+                                "text" in item
+                                  ? item.text
+                                  : JSON.stringify(item)
+                              ) // Extract text if available
+                              .join(" ")
+                          : JSON.stringify(message.content),
+                      createdAt: new Date(),
+                    })),
                 });
               } catch (error) {
                 console.error("Failed to save chat messages:", error);
