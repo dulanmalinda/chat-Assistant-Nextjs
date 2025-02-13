@@ -37,13 +37,16 @@ const deriveKey = (session: Session) => {
 
 const getWalletsApi = async (userId: string, userPassword: string) => {
   try {
-    const response = await fetch("http://127.0.0.1:8000/wallet/getAllWallets", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userId, userPassword }),
-    });
+    const response = await fetch(
+      "http://127.0.0.1:8000/wallet/getAllWalletsNames",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, userPassword }),
+      }
+    );
 
     if (!response.ok) {
       return `Error: ${response.status} ${response.statusText}`;

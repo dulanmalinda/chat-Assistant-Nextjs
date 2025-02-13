@@ -74,7 +74,7 @@ const deriveKey = (session: Session) => {
 const getActiveWalletApi = async (userId: string, userPassword: string) => {
   try {
     const response = await fetch(
-      "http://127.0.0.1:8000/wallet/getActiveWallet",
+      "http://127.0.0.1:8000/wallet/getActiveWalletName",
       {
         method: "POST",
         headers: {
