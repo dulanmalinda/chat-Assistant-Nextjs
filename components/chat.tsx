@@ -12,7 +12,7 @@ import { fetcher, generateUUID } from "@/lib/utils";
 import { Block } from "./block";
 import { MultimodalInput } from "./multimodal-input";
 import { Messages } from "./messages";
-import { VisibilityType } from "./visibility-selector";
+// import { VisibilityType } from "./visibility-selector";
 import { useBlockSelector } from "@/hooks/use-block";
 import { toast } from "sonner";
 
@@ -20,13 +20,13 @@ export function Chat({
   id,
   initialMessages,
   selectedChatModel,
-  selectedVisibilityType,
+  selectedWalletName,
   isReadonly,
 }: {
   id: string;
   initialMessages: Array<Message>;
   selectedChatModel: string;
-  selectedVisibilityType: VisibilityType;
+  selectedWalletName: string;
   isReadonly: boolean;
 }) {
   const { mutate } = useSWRConfig();
@@ -67,7 +67,7 @@ export function Chat({
         <ChatHeader
           chatId={id}
           selectedModelId={selectedChatModel}
-          selectedVisibilityType={selectedVisibilityType}
+          selectedWalletName={selectedWalletName}
           isReadonly={isReadonly}
         />
 

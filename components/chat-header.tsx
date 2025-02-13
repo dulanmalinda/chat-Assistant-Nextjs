@@ -11,17 +11,18 @@ import { PlusIcon, VercelIcon } from "./icons";
 import { useSidebar } from "./ui/sidebar";
 import { memo } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { VisibilityType, VisibilitySelector } from "./visibility-selector";
+// import { VisibilityType, VisibilitySelector } from "./visibility-selector";
+import { WalletSelector } from "./wallet-selector";
 
 function PureChatHeader({
   chatId,
   selectedModelId,
-  selectedVisibilityType,
+  selectedWalletName,
   isReadonly,
 }: {
   chatId: string;
   selectedModelId: string;
-  selectedVisibilityType: VisibilityType;
+  selectedWalletName: string;
   isReadonly: boolean;
 }) {
   const router = useRouter();
@@ -60,9 +61,9 @@ function PureChatHeader({
       )}
 
       {!isReadonly && (
-        <VisibilitySelector
+        <WalletSelector
           chatId={chatId}
-          selectedVisibilityType={selectedVisibilityType}
+          selectedWalletName={selectedWalletName}
           className="order-1 md:order-3"
         />
       )}

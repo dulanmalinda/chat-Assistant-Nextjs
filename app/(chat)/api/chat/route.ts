@@ -34,6 +34,7 @@ import { transferSol } from "@/lib/ai/tools/transfer-sol";
 import { transferTokens } from "@/lib/ai/tools/transfer-tokens";
 import { buyTokens } from "@/lib/ai/tools/buy-tokens";
 import { sellTokens } from "@/lib/ai/tools/sell-tokens";
+import { NextResponse } from "next/server";
 
 export const maxDuration = 60;
 
