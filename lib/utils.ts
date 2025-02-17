@@ -11,6 +11,8 @@ import { twMerge } from "tailwind-merge";
 
 import type { Message as DBMessage, Document } from "@/lib/db/schema";
 
+import { PublicKey } from "@solana/web3.js";
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -18,6 +20,10 @@ export function cn(...inputs: ClassValue[]) {
 interface ApplicationError extends Error {
   info: string;
   status: number;
+}
+
+interface ExtendedDocument extends Document {
+  createdAt: Date;
 }
 
 export const fetcher = async (url: string) => {
@@ -219,11 +225,20 @@ export function getMostRecentUserMessage(messages: Array<Message>) {
 }
 
 export function getDocumentTimestampByIndex(
-  documents: Array<Document>,
+  documents: Array<ExtendedDocument>,
   index: number
 ) {
   if (!documents) return new Date();
   if (index > documents.length) return new Date();
 
   return documents[index].createdAt;
+}
+
+export function isValidSolanaAddress(address: string): boolean {
+  try {
+    new PublicKey(address);
+    return true;
+  } catch (error) {
+    return false;
+  }
 }

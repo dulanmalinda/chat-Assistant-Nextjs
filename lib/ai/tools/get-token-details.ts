@@ -1,6 +1,9 @@
 import { tool } from "ai";
 import { z } from "zod";
 
+import { isValidSolanaAddress } from "@/lib/utils";
+import { searchTokensBySymbol } from "../search-tokens";
+
 export const getTokenDetails = () =>
   tool({
     description: "To get detils of a token",
@@ -8,6 +11,16 @@ export const getTokenDetails = () =>
       address: z.string(),
     }),
     execute: async ({ address }) => {
+      if (!isValidSolanaAddress(address)) {
+        const response = await searchTokensBySymbol(address);
+        return {
+          ...response,
+          searchMessage: `Here are the search results for ${address}.`,
+          warningNote:
+            "⚠️ Please use the CA of the token for on-chain activities and detailed information about the token metadata.",
+        };
+      }
+
       const responce = await getTokenDetailsApi(address);
       return responce;
     },
