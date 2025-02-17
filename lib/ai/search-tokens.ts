@@ -13,7 +13,7 @@ export const searchTokensBySymbol = async (symbol: string) => {
         mintAddress: trade.Trade.Buy.Currency.MintAddress,
         name: trade.Trade.Buy.Currency.Name,
         symbol: trade.Trade.Buy.Currency.Symbol,
-        priceInUSD: `$ ${trade.Trade.Buy.PriceInUSD}`,
+        priceInUSD: trade.Trade.Buy.PriceInUSD,
       })) || []
     );
   } catch (error) {
