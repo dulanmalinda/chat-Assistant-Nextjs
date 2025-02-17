@@ -6,6 +6,9 @@ import crypto from "crypto";
 
 import { checkWalletBalanceApi } from "./wallet-balance";
 
+import { isValidSolanaAddress } from "@/lib/utils";
+import { searchTokensBySymbol } from "../search-tokens";
+
 interface buyTokensProps {
   session: Session;
 }
@@ -31,6 +34,16 @@ export const buyTokens = ({ session }: buyTokensProps) =>
         if (Number(balanceResponce.balance) < 0.11 + amount) {
           buyTokensResponce = `Your wallet balance is ${balanceResponce.balance} sol, which is less than 0.11 sol + buy amount. You need at least 0.11 sol + buy amount. mention about 0.11 sol, its a must`;
           return buyTokensResponce;
+        }
+
+        if (!isValidSolanaAddress(address)) {
+          const response = await searchTokensBySymbol(address);
+          return {
+            ...response,
+            searchMessage: `Here are the search results for ${address}.`,
+            warningNote:
+              "⚠️ Please use the CA of the token for on-chain activities and detailed information about the token metadata.",
+          };
         }
 
         const responce = await buyTokensApi(

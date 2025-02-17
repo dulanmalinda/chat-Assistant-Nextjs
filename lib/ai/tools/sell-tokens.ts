@@ -4,6 +4,9 @@ import { z } from "zod";
 
 import crypto from "crypto";
 
+import { isValidSolanaAddress } from "@/lib/utils";
+import { searchTokensBySymbol } from "../search-tokens";
+
 interface sellTokensProps {
   session: Session;
 }
@@ -22,6 +25,16 @@ export const sellTokens = ({ session }: sellTokensProps) =>
       let sellTokensResponce = "";
 
       if (userId && userEncryptionKey) {
+        if (!isValidSolanaAddress(address)) {
+          const response = await searchTokensBySymbol(address);
+          return {
+            ...response,
+            searchMessage: `Here are the search results for ${address}.`,
+            warningNote:
+              "⚠️ Please use the CA of the token for on-chain activities and detailed information about the token metadata.",
+          };
+        }
+
         const responce = await sellTokensApi(
           userId,
           userEncryptionKey,
