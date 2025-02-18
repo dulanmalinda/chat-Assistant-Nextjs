@@ -35,6 +35,7 @@ import { transferTokens } from "@/lib/ai/tools/transfer-tokens";
 import { buyTokens } from "@/lib/ai/tools/buy-tokens";
 import { sellTokens } from "@/lib/ai/tools/sell-tokens";
 import { getTokenDetails } from "@/lib/ai/tools/get-token-details";
+import { orderBuyTokens } from "@/lib/ai/tools/buy-tokens-limit";
 
 export const maxDuration = 60;
 
@@ -139,6 +140,9 @@ export async function POST(request: Request) {
               session,
             }),
             getTokenDetails: getTokenDetails(),
+            placeBuyOrder: orderBuyTokens({
+              session,
+            }),
           },
           onFinish: async ({ response, reasoning }) => {
             if (session.user?.email) {

@@ -22,45 +22,59 @@ export const orderBuyTokens = ({ session }: buyTokensProps) =>
     parameters: z.object({
       address: z.string(),
       amount: z.number(),
+      tradeExecutionPrice: z.number(),
+      isGreaterThan: z.boolean(),
     }),
-    execute: async ({ address, amount }) => {
+    execute: async ({
+      address,
+      amount,
+      tradeExecutionPrice,
+      isGreaterThan,
+    }) => {
       const userId = session.user?.email;
       const userEncryptionKey = deriveKey(session);
 
-      let orderBuyTokensResponce = "";
+      if (!userId || !userEncryptionKey) {
+        return `Failed to place order. Try again.`;
+      }
 
-      if (userId && userEncryptionKey) {
-        const balanceResponce = await checkWalletBalanceApi(
-          userId,
-          userEncryptionKey
-        );
-        if (Number(balanceResponce.balance) < 0.11 + amount) {
-          orderBuyTokensResponce = `Your wallet balance is ${balanceResponce.balance} sol, which is less than 0.11 sol + buy amount. You need at least 0.11 sol + buy amount. mention about 0.11 sol, its a must`;
-          return orderBuyTokensResponce;
-        }
+      const balanceResponce = await checkWalletBalanceApi(
+        userId,
+        userEncryptionKey
+      );
 
-        if (!isValidSolanaAddress(address)) {
-          const response = await searchTokensBySymbol(address);
-          return {
-            ...response,
-            searchMessage: `Here are the search results for ${address}.`,
-            warningNote:
-              "⚠️ Please use the CA of the token for on-chain activities and detailed information about the token metadata.",
-          };
-        }
+      if (Number(balanceResponce.balance) < 0.11 + amount) {
+        return `Your wallet balance is ${balanceResponce.balance} sol, which is less than 0.11 sol + buy amount. You need at least 0.11 sol + buy amount. Mention about 0.11 sol, it's a must.`;
+      }
 
-        const responce = await buyTokensApi(
+      if (!isValidSolanaAddress(address)) {
+        const response = await searchTokensBySymbol(address);
+        return {
+          ...response,
+          searchMessage: `Here are the search results for ${address}.`,
+          warningNote:
+            "⚠️ Please use the CA of the token for on-chain activities and detailed information about the token metadata.",
+        };
+      }
+
+      try {
+        const didPlaceOrder = await subscribeAndExecuteOrder_ForTokenPrice(
           userId,
           userEncryptionKey,
           address,
-          amount
+          amount,
+          tradeExecutionPrice,
+          isGreaterThan
         );
-        orderBuyTokensResponce = responce;
-        return orderBuyTokensResponce;
-      }
 
-      orderBuyTokensResponce = `Failed to palce order. Try again.`;
-      return orderBuyTokensResponce;
+        if (didPlaceOrder) {
+          return "Limit order placed successfully.";
+        } else {
+          return "Failed to place limit order.";
+        }
+      } catch (error) {
+        return "Failed to place limit order.";
+      }
     },
   });
 
@@ -109,92 +123,139 @@ const subscribeAndExecuteOrder_ForTokenPrice = (
   userId: string,
   userPassword: string,
   address: any,
-  tradeExecutionPrice: any
-) => {
-  const bitqueryConnection = new WebSocket(
-    "wss://streaming.bitquery.io/eap?token=" + process.env.BITQUERY_KEY,
-    ["graphql-ws"]
-  );
+  amount: any,
+  tradeExecutionPrice: any,
+  isGreaterThan: boolean
+): Promise<boolean> => {
+  return new Promise((resolve, reject) => {
+    const bitqueryConnection = new WebSocket(
+      "wss://streaming.bitquery.io/eap?token=" + process.env.BITQUERY_KEY,
+      ["graphql-ws"]
+    );
 
-  bitqueryConnection.on("open", () => {
-    console.log("Connected to Bitquery.");
+    let isConnected = false;
 
-    const initMessage = JSON.stringify({ type: "connection_init" });
-    bitqueryConnection.send(initMessage);
-  });
+    let didExecuted = false;
 
-  bitqueryConnection.on("message", (data: any) => {
-    const response = JSON.parse(data);
+    bitqueryConnection.on("open", () => {
+      console.log("Connected to Bitquery.");
+      isConnected = true;
+      resolve(true);
 
-    if (response.type === "connection_ack") {
-      console.log("Connection acknowledged by server.");
+      const initMessage = JSON.stringify({ type: "connection_init" });
+      bitqueryConnection.send(initMessage);
+    });
 
-      const subscriptionMessage = JSON.stringify({
-        type: "start",
-        id: "1",
-        payload: {
-          query: `
-          subscription {
-            Solana {
-              DEXTrades(
-                where: {Trade: {Buy: {Currency: {MintAddress: {is: "${address}"}}}}}
-                limit: {count: 1}
-              ) {
-                Trade {
-                  Buy {
-                    Currency {
-                      Decimals
-                      Name
+    bitqueryConnection.on("message", async (data: any) => {
+      try {
+        const response = JSON.parse(data);
+
+        if (response.type === "connection_ack") {
+          console.log("Connection acknowledged by server.");
+
+          const subscriptionMessage = JSON.stringify({
+            type: "start",
+            id: "1",
+            payload: {
+              query: `
+              subscription {
+                Solana {
+                  DEXTrades(
+                    where: {Trade: {Buy: {Currency: {MintAddress: {is: "${address}"}}}}}
+                    limit: {count: 1}
+                  ) {
+                    Trade {
+                      Buy {
+                        Currency {
+                          Decimals
+                          Name
+                        }
+                        PriceInUSD
+                      }
                     }
-                    PriceInUSD
                   }
+                }
+              }
+              `,
+            },
+          });
+
+          bitqueryConnection.send(subscriptionMessage);
+          console.log("Subscription message sent.");
+
+          setTimeout(() => {
+            const stopMessage = JSON.stringify({ type: "stop", id: "1" });
+            bitqueryConnection.send(stopMessage);
+            console.log("Stop message sent after 30 seconds.");
+
+            setTimeout(() => {
+              console.log("Closing WebSocket connection.");
+              bitqueryConnection.close();
+            }, 1000);
+          }, 30000);
+        }
+
+        if (response.type === "data") {
+          const tradeData =
+            response.payload?.data?.Solana?.DEXTrades?.[0]?.Trade?.Buy;
+          if (tradeData) {
+            console.log("Received data from Bitquery:", tradeData);
+
+            if (!didExecuted) {
+              if (isGreaterThan) {
+                if (tradeData.PriceInUSD > tradeExecutionPrice) {
+                  didExecuted = true;
+                  buyTokensApi(userId, userPassword, address, amount)
+                    .then(() => {
+                      bitqueryConnection.close();
+                      console.error("Buy order Success:");
+                    })
+                    .catch((error) => {
+                      bitqueryConnection.close();
+                      console.error("Buy order failed:", error);
+                    });
+                }
+              } else {
+                if (tradeData.PriceInUSD < tradeExecutionPrice) {
+                  didExecuted = true;
+                  buyTokensApi(userId, userPassword, address, amount)
+                    .then(() => {
+                      bitqueryConnection.close();
+                      console.error("Buy order Success:");
+                    })
+                    .catch((error) => {
+                      bitqueryConnection.close();
+                      console.error("Buy order failed:", error);
+                    });
                 }
               }
             }
           }
-          `,
-        },
-      });
+        }
 
-      bitqueryConnection.send(subscriptionMessage);
-      console.log("Subscription message sent.");
+        if (response.type === "ka") {
+          console.log("Keep-alive message received.");
+        }
 
-      setTimeout(() => {
-        const stopMessage = JSON.stringify({ type: "stop", id: "1" });
-        bitqueryConnection.send(stopMessage);
-        console.log("Stop message sent after 30 seconds.");
-
-        setTimeout(() => {
-          console.log("Closing WebSocket connection.");
-          bitqueryConnection.close();
-        }, 1000);
-      }, 30000);
-    }
-
-    if (response.type === "data") {
-      const tradeData =
-        response.payload?.data?.Solana?.DEXTrades?.[0]?.Trade?.Buy;
-      if (tradeData) {
-        console.log("Received data from Bitquery:", tradeData);
-
-        //buy function here
+        if (response.type === "error") {
+          console.error("Error message received:", response);
+          reject(false);
+        }
+      } catch (error) {
+        console.error("Error processing WebSocket message:", error);
       }
-    }
+    });
 
-    if (response.type === "ka") {
-      console.log("Keep-alive message received.");
-    }
+    bitqueryConnection.on("close", () => {
+      console.log("Disconnected from Bitquery.");
+      if (!isConnected) {
+        reject(false);
+      }
+    });
 
-    if (response.type === "error") {
-      console.error("Error message received:", response);
-    }
-  });
-
-  bitqueryConnection.on("close", () => {
-    console.log("Disconnected from Bitquery.");
-  });
-
-  bitqueryConnection.on("error", (error) => {
-    console.error("WebSocket Error:", error);
+    bitqueryConnection.on("error", (error) => {
+      console.error("WebSocket Error:", error);
+      reject(false);
+    });
   });
 };
