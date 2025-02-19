@@ -77,25 +77,25 @@ export const orderBuyTokens = ({ session }: buyTokensProps) =>
       console.log(buyLimitPrice);
 
       if (buyLimitPrice <= 0) return "Failed to place limit order.";
-      return "succesfully placed limit order.";
-      // try {
-      //   const didPlaceOrder = await subscribeAndExecuteOrder_ForTokenPrice(
-      //     userId,
-      //     userEncryptionKey,
-      //     address,
-      //     amount,
-      //     buyLimitPrice,
-      //     isGreaterThan
-      //   );
 
-      //   if (didPlaceOrder) {
-      //     return "Limit order placed successfully.";
-      //   } else {
-      //     return "Failed to place limit order.";
-      //   }
-      // } catch (error) {
-      //   return "Failed to place limit order.";
-      // }
+      try {
+        const didPlaceOrder = await subscribeAndExecuteOrder_ForTokenPrice(
+          userId,
+          userEncryptionKey,
+          address,
+          amount,
+          buyLimitPrice,
+          isGreaterThan
+        );
+
+        if (didPlaceOrder) {
+          return "Limit order placed successfully.";
+        } else {
+          return "Failed to place limit order.";
+        }
+      } catch (error) {
+        return "Failed to place limit order.";
+      }
     },
   });
 
