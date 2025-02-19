@@ -8,12 +8,13 @@ import "dotenv/config";
 
 export const getCirculatingMarketcap = () =>
   tool({
-    description: "To get the circulating market cap of a token",
+    description:
+      "To get the circulating market cap of a token. responce should be in USD",
     parameters: z.object({
       address: z.string(),
     }),
     execute: async ({ address }) => {
-      let marketcapResponse = "";
+      let marketcapResponse: string | number = "";
 
       const circulatingSupply = await getCirculatingTokenSupply(address);
       const tokenPrice = await getCurrentTokenPrice(address);
@@ -25,7 +26,8 @@ export const getCirculatingMarketcap = () =>
       const marketcap = validCirculatingSupply * validTokenPrice;
 
       if (marketcap > 0) {
-        marketcapResponse = `The circulating market cap of ${address} is ${marketcap.toLocaleString()} USD`;
+        marketcapResponse = marketcap;
+        //marketcapResponse = `The circulating market cap of ${address} is ${marketcap.toLocaleString()} USD`;
       } else {
         marketcapResponse = `Could not determine the circulating market cap for ${address}.`;
       }

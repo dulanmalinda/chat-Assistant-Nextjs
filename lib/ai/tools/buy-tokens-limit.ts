@@ -21,19 +21,14 @@ interface buyTokensProps {
 
 export const orderBuyTokens = ({ session }: buyTokensProps) =>
   tool({
-    description: "To place buy token order.",
+    description: "To place buy orders.",
     parameters: z.object({
       address: z.string(),
       amount: z.number(),
-      tradeExecutionValue: z.union([z.number(), z.string()]),
+      buyLimitValue: z.number(),
       isGreaterThan: z.boolean(),
     }),
-    execute: async ({
-      address,
-      amount,
-      tradeExecutionValue,
-      isGreaterThan,
-    }) => {
+    execute: async ({ address, amount, buyLimitValue, isGreaterThan }) => {
       const userId = session.user?.email;
       const userEncryptionKey = deriveKey(session);
 
@@ -66,40 +61,23 @@ export const orderBuyTokens = ({ session }: buyTokensProps) =>
       const currentTokenPrice = await getCurrentTokenPrice(address);
       if (currentTokenPrice <= 0) return "Failed to place limit order.";
 
-      let buyLimitPrice = 0;
-      console.log(tradeExecutionValue);
-      if (
-        typeof tradeExecutionValue === "string" &&
-        tradeExecutionValue.includes("%")
-      ) {
-        console.log("here");
-
-        const match = tradeExecutionValue.match(/([\d.]+)%/);
-        if (match) {
-          const percentage = parseFloat(match[1]) / 100;
-          const currentTokenPrice = await getCurrentTokenPrice(address);
-          buyLimitPrice = currentTokenPrice * percentage;
-        } else {
-          return "Invalid percentage format. Use something like 'drop 0.01%'.";
-        }
-      } else {
-        console.log("here s");
-        let isMarketCapProvided = false;
-        if (Number(tradeExecutionValue) > currentTokenPrice * 1000) {
-          isMarketCapProvided = true;
-        }
-
-        if (isMarketCapProvided)
-          buyLimitPrice = Number(tradeExecutionValue) / circulatingTokenSupply;
-        else buyLimitPrice = Number(tradeExecutionValue);
+      let isMarketCapProvided = false;
+      if (buyLimitValue > currentTokenPrice * 1000) {
+        isMarketCapProvided = true;
       }
 
-      console.log(tradeExecutionValue);
+      let buyLimitPrice = 0;
+
+      if (isMarketCapProvided)
+        buyLimitPrice = buyLimitValue / circulatingTokenSupply;
+      else buyLimitPrice = buyLimitValue;
+
+      console.log(buyLimitValue);
       console.log(circulatingTokenSupply);
       console.log(buyLimitPrice);
 
       if (buyLimitPrice <= 0) return "Failed to place limit order.";
-      return "Failed to place limit order.";
+      return "succesfully placed limit order.";
       // try {
       //   const didPlaceOrder = await subscribeAndExecuteOrder_ForTokenPrice(
       //     userId,
@@ -392,14 +370,4 @@ const getCurrentTokenPrice = async (address: string): Promise<number> => {
   } catch (error) {
     return 0;
   }
-};
-
-const getCirculatingMarketcap = async (address: string): Promise<number> => {
-  const circulatingSupply = await getCirculatingTokenSupply(address);
-  const tokenPrice = await getCurrentTokenPrice(address);
-
-  const validCirculatingSupply = circulatingSupply > 0 ? circulatingSupply : 0;
-  const validTokenPrice = tokenPrice > 0 ? tokenPrice : 0;
-
-  return validCirculatingSupply * validTokenPrice;
 };
