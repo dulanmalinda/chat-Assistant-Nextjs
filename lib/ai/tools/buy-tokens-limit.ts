@@ -21,17 +21,17 @@ interface buyTokensProps {
 
 export const orderBuyTokens = ({ session }: buyTokensProps) =>
   tool({
-    description: "To buy Tokens",
+    description: "To place buy token order.",
     parameters: z.object({
       address: z.string(),
       amount: z.number(),
-      mcapBasedBuyCondition: z.number(),
+      tradeExecutionValue: z.union([z.number(), z.string()]),
       isGreaterThan: z.boolean(),
     }),
     execute: async ({
       address,
       amount,
-      mcapBasedBuyCondition,
+      tradeExecutionValue,
       isGreaterThan,
     }) => {
       const userId = session.user?.email;
@@ -60,32 +60,64 @@ export const orderBuyTokens = ({ session }: buyTokensProps) =>
         };
       }
 
-      const currentTokenSupply = await getCurrentTokenSupply(address);
+      const circulatingTokenSupply = await getCirculatingTokenSupply(address);
+      if (circulatingTokenSupply <= 0) return "Failed to place limit order.";
 
-      if (currentTokenSupply <= 0) return "Failed to place limit order.";
+      const currentTokenPrice = await getCurrentTokenPrice(address);
+      if (currentTokenPrice <= 0) return "Failed to place limit order.";
 
-      console.log(mcapBasedBuyCondition);
-      const tradeExecutionPrice = mcapBasedBuyCondition / currentTokenSupply;
-      console.log(tradeExecutionPrice);
+      let buyLimitPrice = 0;
+      console.log(tradeExecutionValue);
+      if (
+        typeof tradeExecutionValue === "string" &&
+        tradeExecutionValue.includes("%")
+      ) {
+        console.log("here");
 
-      try {
-        const didPlaceOrder = await subscribeAndExecuteOrder_ForTokenPrice(
-          userId,
-          userEncryptionKey,
-          address,
-          amount,
-          tradeExecutionPrice,
-          isGreaterThan
-        );
-
-        if (didPlaceOrder) {
-          return "Limit order placed successfully.";
+        const match = tradeExecutionValue.match(/([\d.]+)%/);
+        if (match) {
+          const percentage = parseFloat(match[1]) / 100;
+          const currentTokenPrice = await getCurrentTokenPrice(address);
+          buyLimitPrice = currentTokenPrice * percentage;
         } else {
-          return "Failed to place limit order.";
+          return "Invalid percentage format. Use something like 'drop 0.01%'.";
         }
-      } catch (error) {
-        return "Failed to place limit order.";
+      } else {
+        console.log("here s");
+        let isMarketCapProvided = false;
+        if (Number(tradeExecutionValue) > currentTokenPrice * 1000) {
+          isMarketCapProvided = true;
+        }
+
+        if (isMarketCapProvided)
+          buyLimitPrice = Number(tradeExecutionValue) / circulatingTokenSupply;
+        else buyLimitPrice = Number(tradeExecutionValue);
       }
+
+      console.log(tradeExecutionValue);
+      console.log(circulatingTokenSupply);
+      console.log(buyLimitPrice);
+
+      if (buyLimitPrice <= 0) return "Failed to place limit order.";
+      return "Failed to place limit order.";
+      // try {
+      //   const didPlaceOrder = await subscribeAndExecuteOrder_ForTokenPrice(
+      //     userId,
+      //     userEncryptionKey,
+      //     address,
+      //     amount,
+      //     buyLimitPrice,
+      //     isGreaterThan
+      //   );
+
+      //   if (didPlaceOrder) {
+      //     return "Limit order placed successfully.";
+      //   } else {
+      //     return "Failed to place limit order.";
+      //   }
+      // } catch (error) {
+      //   return "Failed to place limit order.";
+      // }
     },
   });
 
@@ -135,7 +167,7 @@ const subscribeAndExecuteOrder_ForTokenPrice = (
   userPassword: string,
   address: any,
   amount: any,
-  tradeExecutionPrice: any,
+  buyLimitPrice: any,
   isGreaterThan: boolean
 ): Promise<boolean> => {
   return new Promise((resolve, reject) => {
@@ -207,45 +239,64 @@ const subscribeAndExecuteOrder_ForTokenPrice = (
         }
 
         if (response.type === "data") {
-          const tradeData =
-            response.payload?.data?.Solana?.DEXTrades?.[0]?.Trade?.Buy;
-          if (tradeData) {
-            console.log("Received data from Bitquery:", tradeData);
+          const currentTokenPrice =
+            response.payload?.data?.Solana?.DEXTrades?.[0]?.Trade?.Buy
+              ?.PriceInUSD;
+          if (currentTokenPrice) {
+            console.log(
+              "Received Token price from Bitquery:",
+              currentTokenPrice
+            );
 
-            if (!didExecuted) {
-              if (isGreaterThan) {
-                if (tradeData.PriceInUSD > tradeExecutionPrice) {
-                  didExecuted = true;
-                  buyTokensApi(userId, userPassword, address, amount)
-                    .then(() => {
-                      bitqueryConnection.close();
-                      console.error("Buy order Success:");
-                    })
-                    .catch((error) => {
-                      bitqueryConnection.close();
-                      console.error("Buy order failed:", error);
-                    });
-                }
-              } else {
-                if (tradeData.PriceInUSD < tradeExecutionPrice) {
-                  didExecuted = true;
-                  buyTokensApi(userId, userPassword, address, amount)
-                    .then(() => {
-                      bitqueryConnection.close();
-                      console.error("Buy order Success:");
-                    })
-                    .catch((error) => {
-                      bitqueryConnection.close();
-                      console.error("Buy order failed:", error);
-                    });
-                }
+            console.log("trigger price", buyLimitPrice);
+
+            (async () => {
+              didExecuted = await executeTrade(
+                currentTokenPrice,
+                buyLimitPrice,
+                isGreaterThan,
+                didExecuted,
+                userId,
+                userPassword,
+                address,
+                amount
+              );
+
+              if (didExecuted) {
+                console.log("Stopping WebSocket subscription.");
+                const stopMessage = JSON.stringify({ type: "stop", id: "1" });
+                bitqueryConnection.send(stopMessage);
+                bitqueryConnection.close();
               }
-            }
+              console.log("Trade executed:", didExecuted);
+            })();
           }
         }
 
         if (response.type === "ka") {
           console.log("Keep-alive message received.");
+
+          const currentTokenPrice = await getCurrentTokenPrice(address);
+          (async () => {
+            didExecuted = await executeTrade(
+              currentTokenPrice,
+              buyLimitPrice,
+              isGreaterThan,
+              didExecuted,
+              userId,
+              userPassword,
+              address,
+              amount
+            );
+
+            if (didExecuted) {
+              console.log("Stopping WebSocket subscription.");
+              const stopMessage = JSON.stringify({ type: "stop", id: "1" });
+              bitqueryConnection.send(stopMessage);
+              bitqueryConnection.close();
+            }
+            console.log("Trade executed:", didExecuted);
+          })();
         }
 
         if (response.type === "error") {
@@ -271,7 +322,36 @@ const subscribeAndExecuteOrder_ForTokenPrice = (
   });
 };
 
-const getCurrentTokenSupply = async (address: string): Promise<number> => {
+async function executeTrade(
+  currentTokenPrice: number,
+  buyLimitPrice: number,
+  isGreaterThan: boolean,
+  didExecuted: boolean,
+  userId: string,
+  userPassword: string,
+  address: string,
+  amount: number
+): Promise<boolean> {
+  if (didExecuted) return didExecuted;
+
+  const shouldExecute =
+    (isGreaterThan && currentTokenPrice > buyLimitPrice) ||
+    (!isGreaterThan && currentTokenPrice < buyLimitPrice);
+
+  if (shouldExecute) {
+    didExecuted = true;
+    try {
+      await buyTokensApi(userId, userPassword, address, amount);
+      console.error("Buy order Success:");
+    } catch (error) {
+      console.error("Buy order failed:", error);
+    }
+  }
+
+  return didExecuted;
+}
+
+const getCirculatingTokenSupply = async (address: string): Promise<number> => {
   try {
     const connection = new Connection(
       `https://rpc.shyft.to?api_key=${process.env.SHYFT_API_KEY}`,
@@ -288,4 +368,38 @@ const getCurrentTokenSupply = async (address: string): Promise<number> => {
   } catch (error) {
     return 0;
   }
+};
+
+const getCurrentTokenPrice = async (address: string): Promise<number> => {
+  try {
+    const response = await fetch(
+      `https://solana-gateway.moralis.io/token/mainnet/${address}/price`,
+      {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          "X-API-Key": process.env.MORALIS_API_KEY as string,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.usdPrice;
+  } catch (error) {
+    return 0;
+  }
+};
+
+const getCirculatingMarketcap = async (address: string): Promise<number> => {
+  const circulatingSupply = await getCirculatingTokenSupply(address);
+  const tokenPrice = await getCurrentTokenPrice(address);
+
+  const validCirculatingSupply = circulatingSupply > 0 ? circulatingSupply : 0;
+  const validTokenPrice = tokenPrice > 0 ? tokenPrice : 0;
+
+  return validCirculatingSupply * validTokenPrice;
 };

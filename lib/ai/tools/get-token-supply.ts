@@ -6,7 +6,7 @@ import { getMint } from "@solana/spl-token";
 
 import "dotenv/config";
 
-export const getCurrentTokenSupply = () =>
+export const getCirculatingTokenSupply = () =>
   tool({
     description: "To get current supply of a token",
     parameters: z.object({
