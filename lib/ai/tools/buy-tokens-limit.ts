@@ -9,6 +9,9 @@ import { checkWalletBalanceApi } from "./wallet-balance";
 import { isValidSolanaAddress } from "@/lib/utils";
 import { searchTokensBySymbol } from "../search-tokens";
 
+import { Connection, PublicKey } from "@solana/web3.js";
+import { getMint } from "@solana/spl-token";
+
 import WebSocket from "ws";
 import "dotenv/config";
 
@@ -22,13 +25,13 @@ export const orderBuyTokens = ({ session }: buyTokensProps) =>
     parameters: z.object({
       address: z.string(),
       amount: z.number(),
-      tradeExecutionPrice: z.number(),
+      mcapBasedBuyCondition: z.number(),
       isGreaterThan: z.boolean(),
     }),
     execute: async ({
       address,
       amount,
-      tradeExecutionPrice,
+      mcapBasedBuyCondition,
       isGreaterThan,
     }) => {
       const userId = session.user?.email;
@@ -56,6 +59,14 @@ export const orderBuyTokens = ({ session }: buyTokensProps) =>
             "⚠️ Please use the CA of the token for on-chain activities and detailed information about the token metadata.",
         };
       }
+
+      const currentTokenSupply = await getCurrentTokenSupply(address);
+
+      if (currentTokenSupply <= 0) return "Failed to place limit order.";
+
+      console.log(mcapBasedBuyCondition);
+      const tradeExecutionPrice = mcapBasedBuyCondition / currentTokenSupply;
+      console.log(tradeExecutionPrice);
 
       try {
         const didPlaceOrder = await subscribeAndExecuteOrder_ForTokenPrice(
@@ -258,4 +269,23 @@ const subscribeAndExecuteOrder_ForTokenPrice = (
       reject(false);
     });
   });
+};
+
+const getCurrentTokenSupply = async (address: string): Promise<number> => {
+  try {
+    const connection = new Connection(
+      `https://rpc.shyft.to?api_key=${process.env.SHYFT_API_KEY}`,
+      "confirmed"
+    );
+    const mintPublicKey = new PublicKey(address);
+    const mintAccount = await getMint(connection, mintPublicKey);
+
+    const supply = mintAccount.supply;
+    const decimals = mintAccount.decimals;
+    const formattedCurrentSupply = Number(supply) / 10 ** decimals;
+
+    return formattedCurrentSupply;
+  } catch (error) {
+    return 0;
+  }
 };
