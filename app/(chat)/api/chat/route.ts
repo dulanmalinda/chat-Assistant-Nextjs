@@ -106,8 +106,8 @@ export async function POST(request: Request) {
           //         "setActiveWallet",
           //         "getActiveWallet",
           //       ],
-          // experimental_transform: smoothStream({ chunking: "word" }),
-          // experimental_generateMessageId: generateUUID,
+          experimental_transform: smoothStream({ chunking: "word" }),
+          experimental_generateMessageId: generateUUID,
           tools: {
             getWeather,
             // createDocument: createDocument({ session, dataStream }),

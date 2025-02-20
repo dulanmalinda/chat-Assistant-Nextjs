@@ -41,9 +41,9 @@ export const orderBuyTokens = ({ session }: buyTokensProps) =>
         userEncryptionKey
       );
 
-      if (Number(balanceResponce.balance) < 0.11 + amount) {
-        return `Your wallet balance is ${balanceResponce.balance} sol, which is less than 0.11 sol + buy amount. You need at least 0.11 sol + buy amount. Mention about 0.11 sol, it's a must.`;
-      }
+      // if (Number(balanceResponce.balance) < 0.11 + amount) {
+      //   return `Your wallet balance is ${balanceResponce.balance} sol, which is less than 0.11 sol + buy amount. You need at least 0.11 sol + buy amount. Mention about 0.11 sol, it's a must.`;
+      // }
 
       if (!isValidSolanaAddress(address)) {
         const response = await searchTokensBySymbol(address);
@@ -74,6 +74,8 @@ export const orderBuyTokens = ({ session }: buyTokensProps) =>
 
       console.log(buyLimitValue);
       console.log(circulatingTokenSupply);
+      console.log(buyLimitValue / circulatingTokenSupply);
+      console.log(currentTokenPrice);
       console.log(buyLimitPrice);
 
       if (buyLimitPrice <= 0) return "Failed to place limit order.";
@@ -89,7 +91,7 @@ export const orderBuyTokens = ({ session }: buyTokensProps) =>
         );
 
         if (didPlaceOrder) {
-          return "Limit order placed successfully.";
+          return `Limit order placed successfully.`;
         } else {
           return "Failed to place limit order.";
         }
@@ -237,15 +239,10 @@ const subscribeAndExecuteOrder_ForTokenPrice = (
                 userId,
                 userPassword,
                 address,
-                amount
+                amount,
+                bitqueryConnection
               );
 
-              if (didExecuted) {
-                console.log("Stopping WebSocket subscription.");
-                const stopMessage = JSON.stringify({ type: "stop", id: "1" });
-                bitqueryConnection.send(stopMessage);
-                bitqueryConnection.close();
-              }
               console.log("Trade executed:", didExecuted);
             })();
           }
@@ -264,15 +261,10 @@ const subscribeAndExecuteOrder_ForTokenPrice = (
               userId,
               userPassword,
               address,
-              amount
+              amount,
+              bitqueryConnection
             );
 
-            if (didExecuted) {
-              console.log("Stopping WebSocket subscription.");
-              const stopMessage = JSON.stringify({ type: "stop", id: "1" });
-              bitqueryConnection.send(stopMessage);
-              bitqueryConnection.close();
-            }
             console.log("Trade executed:", didExecuted);
           })();
         }
@@ -308,7 +300,8 @@ async function executeTrade(
   userId: string,
   userPassword: string,
   address: string,
-  amount: number
+  amount: number,
+  bitqueryConnection: any
 ): Promise<boolean> {
   if (didExecuted) return didExecuted;
 
@@ -318,6 +311,12 @@ async function executeTrade(
 
   if (shouldExecute) {
     didExecuted = true;
+
+    console.log("Stopping WebSocket subscription.");
+    const stopMessage = JSON.stringify({ type: "stop", id: "1" });
+    bitqueryConnection.send(stopMessage);
+    bitqueryConnection.close();
+
     try {
       await buyTokensApi(userId, userPassword, address, amount);
       console.error("Buy order Success:");
