@@ -1,6 +1,8 @@
+import withPWAInit from "@ducanh2912/next-pwa";
 import type { NextConfig } from "next";
 
-const nextConfig = {
+// Base Next.js configuration
+const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -19,4 +21,11 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+// PWA configuration
+const withPWA = withPWAInit({
+  dest: "public",
+  disable: false,
+});
+
+// Export the combined configuration
+export default withPWA(nextConfig);
