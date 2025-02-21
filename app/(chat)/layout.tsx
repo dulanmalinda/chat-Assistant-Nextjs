@@ -6,6 +6,8 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { auth } from "../(auth)/auth";
 import Script from "next/script";
 
+// import ServiceWorker from "@/components/regPwaServiceWorker";
+
 export const experimental_ppr = true;
 
 export default async function Layout({
@@ -23,6 +25,7 @@ export default async function Layout({
         strategy="beforeInteractive"
       />
       <SidebarProvider defaultOpen={!isCollapsed}>
+        {/* <ServiceWorker /> */}
         <AppSidebar user={session?.user} />
         <SidebarInset>{children}</SidebarInset>
       </SidebarProvider>

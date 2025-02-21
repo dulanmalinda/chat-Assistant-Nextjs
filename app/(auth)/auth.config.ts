@@ -17,6 +17,14 @@ export const authConfig = {
       const isOnRegister = nextUrl.pathname.startsWith("/register");
       const isOnLogin = nextUrl.pathname.startsWith("/login");
 
+      const isPWAAsset =
+        nextUrl.pathname.startsWith("/manifest.json") ||
+        nextUrl.pathname.startsWith("/icon-") || // Allow all icons
+        nextUrl.pathname.startsWith("/apple-touch-icon") ||
+        nextUrl.pathname.startsWith("/favicon");
+
+      if (isPWAAsset) return true;
+
       if (isLoggedIn && (isOnLogin || isOnRegister)) {
         return Response.redirect(new URL("/", nextUrl as unknown as URL));
       }
@@ -25,9 +33,13 @@ export const authConfig = {
         return true; // Always allow access to register and login pages
       }
 
+      // if (!isLoggedIn) {
+      //   return Response.redirect(new URL("/login", nextUrl.origin));
+      // }
+
       if (isOnChat) {
         if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
+        return false;
       }
 
       if (isLoggedIn) {

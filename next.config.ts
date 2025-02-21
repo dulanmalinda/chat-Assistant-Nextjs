@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    ppr: true,
+    ppr: false,
   },
   images: {
     remotePatterns: [
@@ -19,12 +19,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  reactStrictMode: true,
 };
 
 // PWA configuration
 const withPWA = withPWAInit({
   dest: "public",
-  disable: false,
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
 });
 
 // Export the combined configuration
