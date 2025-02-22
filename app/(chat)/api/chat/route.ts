@@ -29,7 +29,8 @@ import { getWeather } from "@/lib/ai/tools/get-weather";
 import { createWallet } from "@/lib/ai/tools/create-wallet";
 import { getWallets } from "@/lib/ai/tools/get-wallets";
 import { setActiveWallet, getActiveWallet } from "@/lib/ai/tools/active-wallet";
-import { checkWalletBalance } from "@/lib/ai/tools/wallet-balance";
+import { checkWalletBalance } from "@/lib/ai/tools/wallet-balance-active";
+import { checkWalletBalances } from "@/lib/ai/tools/wallet-balance-all";
 import { transferSol } from "@/lib/ai/tools/transfer-sol";
 import { transferTokens } from "@/lib/ai/tools/transfer-tokens";
 import { buyTokens } from "@/lib/ai/tools/buy-tokens";
@@ -129,6 +130,9 @@ export async function POST(request: Request) {
               session,
             }),
             checkWalletBalance: checkWalletBalance({
+              session,
+            }),
+            checkWalletBalances: checkWalletBalances({
               session,
             }),
             transferSol: transferSol({

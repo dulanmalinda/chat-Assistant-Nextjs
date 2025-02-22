@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import crypto from "crypto";
 
-import { checkWalletBalanceApi } from "./wallet-balance";
+import { checkWalletBalanceApi } from "./wallet-balance-active";
 
 interface transferSolProps {
   session: Session;
