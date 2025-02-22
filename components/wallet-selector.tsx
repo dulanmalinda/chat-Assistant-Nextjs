@@ -101,7 +101,6 @@ export function WalletSelector({
       if (!response.ok) throw new Error("Failed to set active wallet");
 
       const data = await response.json();
-      _setWallet(wallet_name);
       console.log("Active wallet set:", data);
 
       return data;

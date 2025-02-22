@@ -101,8 +101,6 @@ const setActiveWalletApi = async (
   wallet_name: string
 ) => {
   try {
-    console.log(wallet_name);
-
     const response = await fetch(
       "http://127.0.0.1:8000/wallet/setActiveWallet",
       {
