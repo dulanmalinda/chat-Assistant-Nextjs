@@ -10,7 +10,7 @@ interface getWalletsProps {
 
 export const getWallets = ({ session }: getWalletsProps) =>
   tool({
-    description: "To get my wallets details",
+    description: "Get details of wallets",
     parameters: z.object({}),
     execute: async ({}) => {
       const userId = session.user?.email;
