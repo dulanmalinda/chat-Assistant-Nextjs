@@ -21,6 +21,15 @@ import {
 export function SidebarUserNav({ user }: { user: User }) {
   const { setTheme, theme } = useTheme();
 
+  const handleSignOut = async () => {
+    await signOut({ redirect: false });
+    localStorage.clear();
+    sessionStorage.clear();
+    document.cookie =
+      "next-auth.session-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    window.location.href = "/login";
+  };
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -54,9 +63,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                 type="button"
                 className="w-full cursor-pointer"
                 onClick={() => {
-                  signOut({
-                    redirectTo: "/",
-                  });
+                  handleSignOut();
                 }}
               >
                 Sign out
