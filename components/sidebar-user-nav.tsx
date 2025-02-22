@@ -25,9 +25,9 @@ export function SidebarUserNav({ user }: { user: User }) {
     await signOut({ redirect: false });
     localStorage.clear();
     sessionStorage.clear();
-    document.cookie =
-      "next-auth.session-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    window.location.href = "/login";
+    // Wait 100ms to ensure the cookie is cleared by the browser
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    window.location.reload();
   };
 
   return (
