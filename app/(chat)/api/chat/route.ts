@@ -110,7 +110,7 @@ export async function POST(request: Request) {
           experimental_transform: smoothStream({ chunking: "word" }),
           experimental_generateMessageId: generateUUID,
           tools: {
-            getWeather,
+            // getWeather,
             // createDocument: createDocument({ session, dataStream }),
             // updateDocument: updateDocument({ session, dataStream }),
             // requestSuggestions: requestSuggestions({
@@ -129,10 +129,10 @@ export async function POST(request: Request) {
             getActiveWallet: getActiveWallet({
               session,
             }),
-            checkWalletBalance: checkWalletBalance({
+            checkBalance_activewallet: checkWalletBalance({
               session,
             }),
-            checkWalletBalances: checkWalletBalances({
+            checkBalance_allwallets: checkWalletBalances({
               session,
             }),
             transferSol: transferSol({

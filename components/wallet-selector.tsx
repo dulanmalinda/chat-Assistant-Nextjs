@@ -48,7 +48,7 @@ export function WalletSelector({
 
     const interval = setInterval(() => {
       fetchWallets();
-    }, 5000);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, []);
