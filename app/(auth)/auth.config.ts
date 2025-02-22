@@ -33,9 +33,9 @@ export const authConfig = {
         return true; // Always allow access to register and login pages
       }
 
-      // if (!isLoggedIn) {
-      //   return Response.redirect(new URL("/login", nextUrl.origin));
-      // }
+      if (!isLoggedIn) {
+        return Response.redirect(new URL("/login", nextUrl.origin));
+      }
 
       if (isOnChat) {
         if (isLoggedIn) return true;
