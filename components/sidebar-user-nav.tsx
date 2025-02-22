@@ -55,7 +55,6 @@ export function SidebarUserNav({ user }: { user: User }) {
                 className="w-full cursor-pointer"
                 onClick={() => {
                   signOut({
-                    redirect: true,
                     redirectTo: "/",
                   });
                 }}
