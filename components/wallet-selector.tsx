@@ -101,6 +101,7 @@ export function WalletSelector({
       if (!response.ok) throw new Error("Failed to set active wallet");
 
       const data = await response.json();
+      _setWallet(wallet_name);
       console.log("Active wallet set:", data);
 
       return data;
@@ -133,7 +134,6 @@ export function WalletSelector({
           <DropdownMenuItem
             key={wallet.name}
             onSelect={() => {
-              _setWallet(wallet.name);
               setActiveWallet(wallet.name);
               setOpen(false);
             }}
