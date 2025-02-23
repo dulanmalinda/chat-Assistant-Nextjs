@@ -21,14 +21,9 @@ export default function Page() {
     {
       status: "idle",
     }
-  ) || { status: "idle" };
+  );
 
   useEffect(() => {
-    if (!state || !state.status) {
-      toast.error("Failed process your submission. Try again!");
-      return;
-    }
-
     if (state.status === "failed") {
       toast.error("Invalid credentials!");
     } else if (state.status === "invalid_data") {
@@ -37,7 +32,7 @@ export default function Page() {
       setIsSuccessful(true);
       router.refresh();
     }
-  }, [state?.status, router]);
+  }, [state.status, router]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);
