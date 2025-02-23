@@ -25,7 +25,7 @@ export function SidebarUserNav({ user }: { user: User }) {
 
   const handleSignOut = async () => {
     setWalletSelectionEnabled(false);
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait for 2 second
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 2 second
     signOut({ redirectTo: "/" });
   };
 
