@@ -22,12 +22,12 @@ export function SidebarUserNav({ user }: { user: User }) {
   const { setTheme, theme } = useTheme();
 
   const handleSignOut = async () => {
-    await signOut();
+    signOut();
     // localStorage.clear();
     // sessionStorage.clear();
     // Wait 100ms to ensure the cookie is cleared by the browser
     // await new Promise((resolve) => setTimeout(resolve, 100));
-    window.location.reload();
+    // window.location.reload();
   };
 
   return (
