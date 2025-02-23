@@ -18,14 +18,14 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-import { setWalletSelectionEnabled } from "./wallet-selector";
+//import { setWalletSelectionEnabled } from "./wallet-selector";
 
 export function SidebarUserNav({ user }: { user: User }) {
   const { setTheme, theme } = useTheme();
 
   const handleSignOut = async () => {
-    setWalletSelectionEnabled(false);
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 2 second
+    //setWalletSelectionEnabled(false);
+    //await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 1 second
     signOut({ redirectTo: "/" });
   };
 
