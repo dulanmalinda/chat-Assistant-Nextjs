@@ -43,15 +43,15 @@ export function WalletSelector({
     [_wallet]
   );
 
-  useEffect(() => {
-    fetchWallets();
+  // useEffect(() => {
+  //   fetchWallets();
 
-    const interval = setInterval(() => {
-      fetchWallets();
-    }, 1000);
+  //   const interval = setInterval(() => {
+  //     fetchWallets();
+  //   }, 1000);
 
-    return () => clearInterval(interval);
-  }, []);
+  //   return () => clearInterval(interval);
+  // }, []);
 
   const fetchWallets = async () => {
     try {
