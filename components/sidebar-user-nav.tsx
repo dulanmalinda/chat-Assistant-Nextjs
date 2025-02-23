@@ -4,6 +4,7 @@ import Image from "next/image";
 import type { User } from "next-auth";
 import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
+import { destroyCookie } from "nookies";
 
 import {
   DropdownMenu,
@@ -22,13 +23,21 @@ export function SidebarUserNav({ user }: { user: User }) {
   const { setTheme, theme } = useTheme();
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/login" });
+    await signOut({ redirect: false });
     localStorage.clear();
     sessionStorage.clear();
 
-    // Wait 100ms to ensure the cookie is cleared by the browser
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    // window.location.href = "/login";
+    // Manually remove NextAuth cookies
+    destroyCookie(null, "__Secure-authjs.session-token", { path: "/" });
+    destroyCookie(null, "__Host-authjs.csrf-token", { path: "/" });
+    destroyCookie(null, "__Host-authjs.csrf-token", { path: "/" });
+
+    destroyCookie(null, "authjs.session-token", { path: "/" });
+    destroyCookie(null, "authjs.csrf-token", { path: "/" });
+    destroyCookie(null, "authjs.callback-url", { path: "/" });
+
+    // Reload to ensure the session is fully removed
+    window.location.href = "/login";
   };
 
   return (
