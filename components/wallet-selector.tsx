@@ -17,6 +17,8 @@ import {
   WalletIcon,
 } from "./icons";
 
+let setWalletSelectionEnabled: (enabled: boolean) => void;
+
 export function WalletSelector({
   chatId,
   className,
@@ -43,15 +45,24 @@ export function WalletSelector({
     [_wallet]
   );
 
-  // useEffect(() => {
-  //   fetchWallets();
+  const [isWalletSelectionEnabled, setIsWalletSelectionEnabled] =
+    useState(true);
 
-  //   const interval = setInterval(() => {
-  //     fetchWallets();
-  //   }, 1000);
+  setWalletSelectionEnabled = (enabled: boolean) => {
+    setIsWalletSelectionEnabled(enabled);
+  };
 
-  //   return () => clearInterval(interval);
-  // }, []);
+  useEffect(() => {
+    if (!isWalletSelectionEnabled) return;
+
+    fetchWallets();
+
+    const interval = setInterval(() => {
+      fetchWallets();
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [isWalletSelectionEnabled]);
 
   const fetchWallets = async () => {
     try {
@@ -149,3 +160,5 @@ export function WalletSelector({
     </DropdownMenu>
   );
 }
+
+export { setWalletSelectionEnabled };

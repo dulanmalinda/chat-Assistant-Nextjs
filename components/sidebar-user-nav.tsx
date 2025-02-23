@@ -18,16 +18,15 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
+import { setWalletSelectionEnabled } from "./wallet-selector";
+
 export function SidebarUserNav({ user }: { user: User }) {
   const { setTheme, theme } = useTheme();
 
   const handleSignOut = async () => {
-    await signOut({ redirectTo: "/" });
-    // localStorage.clear();
-    // sessionStorage.clear();
-    // Wait 100ms to ensure the cookie is cleared by the browser
-    // await new Promise((resolve) => setTimeout(resolve, 100));
-    // window.location.reload();
+    setWalletSelectionEnabled(false);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    signOut({ redirectTo: "/" });
   };
 
   return (

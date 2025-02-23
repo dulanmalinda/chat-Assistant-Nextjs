@@ -21,7 +21,7 @@ interface buyTokensProps {
 
 export const orderBuyTokens = ({ session }: buyTokensProps) =>
   tool({
-    description: "To place buy orders.",
+    description: "Place buy orders.",
     parameters: z.object({
       address: z.string(),
       amount: z.number(),

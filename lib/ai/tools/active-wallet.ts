@@ -14,14 +14,13 @@ interface setWalletsProps {
 
 export const getActiveWallet = ({ session }: getWalletsProps) =>
   tool({
-    description: "To get my active wallet",
+    description: "Get my wallet (usually the active wallet).",
     parameters: z.object({}),
     execute: async ({}) => {
       const userId = session.user?.email;
       const userEncryptionKey = deriveKey(session);
 
       let getActiveWalletResponce = "";
-
       if (userId && userEncryptionKey) {
         const responce = await getActiveWalletApi(userId, userEncryptionKey);
         getActiveWalletResponce = responce;
@@ -35,7 +34,7 @@ export const getActiveWallet = ({ session }: getWalletsProps) =>
 
 export const setActiveWallet = ({ session }: setWalletsProps) =>
   tool({
-    description: "To set my active wallet",
+    description: "Set my active wallet",
     parameters: z.object({
       wallet_name: z.string(),
     }),
