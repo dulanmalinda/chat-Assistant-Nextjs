@@ -42,6 +42,8 @@ import { getCirculatingTokenSupply } from "@/lib/ai/tools/get-token-supply";
 import { getCurrentTokenPrice } from "@/lib/ai/tools/get-token-price";
 import { getCirculatingMarketcap } from "@/lib/ai/tools/get-token-mcap";
 
+import { checkWalletTokenBalances } from "@/lib/ai/tools/get-wallet-token-balances";
+
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
@@ -154,6 +156,7 @@ export async function POST(request: Request) {
             getCirculatingTokenSupply: getCirculatingTokenSupply(),
             getCurrentTokenPrice: getCurrentTokenPrice(),
             getTokenMarketcap: getCirculatingMarketcap(),
+            getWalletTokenBalances: checkWalletTokenBalances(),
           },
           onFinish: async ({ response, reasoning }) => {
             if (session.user?.email) {
