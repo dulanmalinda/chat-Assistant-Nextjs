@@ -156,7 +156,9 @@ export async function POST(request: Request) {
             getCirculatingTokenSupply: getCirculatingTokenSupply(),
             getCurrentTokenPrice: getCurrentTokenPrice(),
             getTokenMarketcap: getCirculatingMarketcap(),
-            getWalletTokenBalances: checkWalletTokenBalances(),
+            getWalletTokenBalances: checkWalletTokenBalances({
+              session,
+            }),
           },
           onFinish: async ({ response, reasoning }) => {
             if (session.user?.email) {

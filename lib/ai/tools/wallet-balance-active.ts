@@ -10,7 +10,7 @@ interface checkWalletBalanceProps {
 
 export const checkWalletBalance = ({ session }: checkWalletBalanceProps) =>
   tool({
-    description: "Get balance of active wallet",
+    description: "Get balance (SOL) of the active wallet",
     parameters: z.object({}),
     execute: async ({}) => {
       const userId = session.user?.email;
