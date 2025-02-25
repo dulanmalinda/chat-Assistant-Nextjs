@@ -5,7 +5,6 @@ import { z } from "zod";
 import crypto from "crypto";
 
 import { isValidSolanaAddress } from "@/lib/utils";
-import { searchTokensBySymbol } from "../search-tokens";
 
 interface transferSolProps {
   session: Session;
@@ -27,13 +26,15 @@ export const transferTokens = ({ session }: transferSolProps) =>
 
       if (userId && userEncryptionKey) {
         if (!isValidSolanaAddress(mint_address)) {
-          const response = await searchTokensBySymbol(mint_address);
-          return {
-            ...response,
-            searchMessage: `Here are the search results for ${mint_address}.`,
-            warningNote:
-              "⚠️ Please use the CA of the token for on-chain activities and detailed information about the token metadata.",
-          };
+          // const response = await searchTokensBySymbol(mint_address);
+          // return {
+          //   ...response,
+          //   searchMessage: `Here are the search results for ${mint_address}.`,
+          //   warningNote:
+          //     "⚠️ Please use the CA of the token for on-chain activities and detailed information about the token metadata.",
+          // };
+
+          return `could not find any tokens for ${mint_address}. Please try using contract address of the token`;
         }
         const responce = await transferTokensApi(
           userId,

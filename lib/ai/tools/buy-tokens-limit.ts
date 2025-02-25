@@ -7,7 +7,6 @@ import crypto from "crypto";
 import { checkWalletBalanceApi } from "./wallet-balance-active";
 
 import { isValidSolanaAddress } from "@/lib/utils";
-import { searchTokensBySymbol } from "../search-tokens";
 
 import { Connection, PublicKey } from "@solana/web3.js";
 import { getMint } from "@solana/spl-token";
@@ -46,13 +45,15 @@ export const orderBuyTokens = ({ session }: buyTokensProps) =>
       // }
 
       if (!isValidSolanaAddress(address)) {
-        const response = await searchTokensBySymbol(address);
-        return {
-          ...response,
-          searchMessage: `Here are the search results for ${address}.`,
-          warningNote:
-            "⚠️ Please use the CA of the token for on-chain activities and detailed information about the token metadata.",
-        };
+        // const response = await searchTokensBySymbol(address);
+        // return {
+        //   ...response,
+        //   searchMessage: `Here are the search results for ${address}.`,
+        //   warningNote:
+        //     "⚠️ Please use the CA of the token for on-chain activities and detailed information about the token metadata.",
+        // };
+
+        return `could not find any tokens for ${address}. Please try using contract address of the token`;
       }
 
       const circulatingTokenSupply = await getCirculatingTokenSupply(address);

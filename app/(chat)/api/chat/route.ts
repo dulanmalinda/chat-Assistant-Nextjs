@@ -44,6 +44,8 @@ import { getCirculatingMarketcap } from "@/lib/ai/tools/get-token-mcap";
 
 import { checkWalletTokenBalances } from "@/lib/ai/tools/get-wallet-token-balances";
 
+import { searchTokens } from "@/lib/ai/tools/search-tokens";
+
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
@@ -94,9 +96,9 @@ export async function POST(request: Request) {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system:
-            'You are an AI assistant that processes wallet-related tasks sequentially. When a user specifies a wallet (e.g., "using wallet-1"), first set that wallet as active using setActiveWallet before performing any wallet based actions. Execute one tool at a time and wait for each step to complete before proceeding.', //systemPrompt({ selectedChatModel }),
+            'You are an AI assistant that processes wallet-related/trading-related tasks sequentially. For example when a user specifies a wallet (e.g., "using wallet-1"), first set that wallet as the active wallet before performing any wallet based actions. Otherwise use the current active wallet. Execute one tool at a time and wait for each step to complete before proceeding.', //systemPrompt({ selectedChatModel }),
           messages,
-          maxSteps: 5,
+          maxSteps: 6,
           // experimental_activeTools:
           //   selectedChatModel === "chat-model-reasoning"
           //     ? []
@@ -160,6 +162,7 @@ export async function POST(request: Request) {
             getWalletTokenBalances: checkWalletTokenBalances({
               session,
             }),
+            searchTokens: searchTokens(),
           },
           onFinish: async ({ response, reasoning }) => {
             if (session.user?.email) {
