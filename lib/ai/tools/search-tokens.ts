@@ -27,6 +27,10 @@ const searchTokensApi = async (search_param: string) => {
       );
     }
 
+    // console.log(
+    //   `https://data.solanatracker.io/search?query=${search_param}&limit=10&page=1`
+    // );
+
     const response = await fetch(
       `https://data.solanatracker.io/search?query=${search_param}&limit=10&page=1`,
       {

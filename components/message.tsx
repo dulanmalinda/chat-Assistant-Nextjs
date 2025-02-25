@@ -25,6 +25,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { MessageEditor } from "./message-editor";
 import { DocumentPreview } from "./document-preview";
 import { MessageReasoning } from "./message-reasoning";
+import { TokenDetails } from "./token-details";
+import { TokenDetailsSkeleton } from "./token-details-skeleton";
 
 const PurePreviewMessage = ({
   chatId,
@@ -118,7 +120,15 @@ const PurePreviewMessage = ({
                       message.role === "user",
                   })}
                 >
-                  <Markdown>{message.content as string}</Markdown>
+                  {message.role === "user" ? (
+                    <Markdown>{message.content as string}</Markdown>
+                  ) : !message.toolInvocations ||
+                    message.toolInvocations.length === 0 ||
+                    !message.toolInvocations.some((tool) =>
+                      ["getWeather", "getTokenDetails"].includes(tool.toolName)
+                    ) ? (
+                    <Markdown>{message.content as string}</Markdown>
+                  ) : null}
                 </div>
               </div>
             )}
@@ -166,6 +176,13 @@ const PurePreviewMessage = ({
                             result={result}
                             isReadonly={isReadonly}
                           />
+                        ) : toolName === "getTokenDetails" ? (
+                          <TokenDetails
+                            token={result.token}
+                            pools={result.pools}
+                            events={result.events}
+                            risk={result.risk}
+                          />
                         ) : // <pre>{JSON.stringify(result, null, 2)}</pre>
                         null}
                       </div>
@@ -194,6 +211,8 @@ const PurePreviewMessage = ({
                           args={args}
                           isReadonly={isReadonly}
                         />
+                      ) : toolName === "getTokenDetails" ? (
+                        <TokenDetailsSkeleton />
                       ) : null}
                     </div>
                   );
