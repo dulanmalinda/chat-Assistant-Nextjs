@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import crypto from "crypto";
 
-import { checkWalletBalanceApi } from "./wallet-balance-active";
+// import { checkWalletBalanceApi } from "./wallet-balance-active";
 
 import { isValidSolanaAddress } from "@/lib/utils";
 
@@ -14,7 +14,8 @@ interface buyTokensProps {
 
 export const buyTokens = ({ session }: buyTokensProps) =>
   tool({
-    description: "To buy Tokens",
+    description:
+      "Buy Tokens with Sol. First you must check the wallet balance annd confirm that its grater than the buy amount + 0.11 sol.",
     parameters: z.object({
       address: z.string(),
       amount: z.number(),
@@ -26,14 +27,14 @@ export const buyTokens = ({ session }: buyTokensProps) =>
       let buyTokensResponce = "";
 
       if (userId && userEncryptionKey) {
-        const balanceResponce = await checkWalletBalanceApi(
-          userId,
-          userEncryptionKey
-        );
-        if (Number(balanceResponce.balance) < 0.11 + amount) {
-          buyTokensResponce = `Your wallet balance is ${balanceResponce.balance} sol, which is less than 0.11 sol + buy amount. You need at least 0.11 sol + buy amount. mention about 0.11 sol, its a must`;
-          return buyTokensResponce;
-        }
+        // const balanceResponce = await checkWalletBalanceApi(
+        //   userId,
+        //   userEncryptionKey
+        // );
+        // if (Number(balanceResponce.balance) < 0.11 + amount) {
+        //   buyTokensResponce = `Your wallet balance is ${balanceResponce.balance} sol, which is less than 0.11 sol + buy amount. You need at least 0.11 sol + buy amount. mention about 0.11 sol, its a must`;
+        //   return buyTokensResponce;
+        // }
 
         if (!isValidSolanaAddress(address)) {
           // const response = await searchTokensBySymbol(address);

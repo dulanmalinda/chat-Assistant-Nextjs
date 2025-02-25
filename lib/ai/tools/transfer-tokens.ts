@@ -12,7 +12,8 @@ interface transferSolProps {
 
 export const transferTokens = ({ session }: transferSolProps) =>
   tool({
-    description: "To transfer Tokens",
+    description:
+      "Transfer Tokens. Proceed only if token balance of the wallet is greater than transfer amount",
     parameters: z.object({
       to_address: z.string(),
       amount: z.number(),

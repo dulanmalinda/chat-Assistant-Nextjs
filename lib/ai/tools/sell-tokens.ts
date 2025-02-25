@@ -12,7 +12,8 @@ interface sellTokensProps {
 
 export const sellTokens = ({ session }: sellTokensProps) =>
   tool({
-    description: "To sell Tokens",
+    description:
+      "Sell Tokens. First you must check whether the wallet has sufficient tokens to sell.",
     parameters: z.object({
       address: z.string(),
       amount: z.number(),

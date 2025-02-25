@@ -5,21 +5,30 @@ import "dotenv/config";
 
 export const getCurrentTokenPrice = () =>
   tool({
-    description: "To get the current price of a token",
+    description:
+      "Get current price of a token. if the CA is not provided search for the token and then get the price",
     parameters: z.object({
       address: z.string(),
     }),
     execute: async ({ address }) => {
       let priceResponse = "";
 
+      const apiKey = process.env.SOLANATRACKER_KEY;
+
+      if (!apiKey) {
+        throw new Error(
+          "API Key is missing. Please set SOLANATRACKER_KEY in your environment variables."
+        );
+      }
+
       try {
         const response = await fetch(
-          `https://solana-gateway.moralis.io/token/mainnet/${address}/price`,
+          `https://data.solanatracker.io/price?token=${address}`,
           {
             method: "GET",
             headers: {
               accept: "application/json",
-              "X-API-Key": process.env.MORALIS_API_KEY as string,
+              "X-API-Key": apiKey,
             },
           }
         );
@@ -31,12 +40,8 @@ export const getCurrentTokenPrice = () =>
         }
 
         const data = await response.json();
-        const price = data?.usdPrice ?? 0;
 
-        priceResponse =
-          price > 0
-            ? `Current token price of ${address} is ${price} USD`
-            : `Token price not available or invalid for ${address}.`;
+        priceResponse = data;
       } catch (error) {
         console.error("Error fetching token price:", error);
         priceResponse = `Failed to get current price for ${address}. Please try again.`;

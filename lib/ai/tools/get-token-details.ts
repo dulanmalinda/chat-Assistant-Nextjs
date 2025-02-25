@@ -41,7 +41,7 @@ const getTokenDetailsApi = async (address: string) => {
     }
 
     const response = await fetch(
-      `https://data.solanatracker.io/tokens/DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263`,
+      `https://data.solanatracker.io/tokens/${address}`,
       {
         method: "GET",
         headers: {

@@ -29,8 +29,7 @@ import { getWeather } from "@/lib/ai/tools/get-weather";
 import { createWallet } from "@/lib/ai/tools/create-wallet";
 import { getWallets } from "@/lib/ai/tools/get-wallets";
 import { setActiveWallet, getActiveWallet } from "@/lib/ai/tools/active-wallet";
-import { checkWalletBalance } from "@/lib/ai/tools/wallet-balance-active";
-import { checkWalletBalances } from "@/lib/ai/tools/wallet-balance-all";
+// import { checkWalletBalances } from "@/lib/ai/tools/wallet-balance-all";
 import { transferSol } from "@/lib/ai/tools/transfer-sol";
 import { transferTokens } from "@/lib/ai/tools/transfer-tokens";
 import { buyTokens } from "@/lib/ai/tools/buy-tokens";
@@ -42,7 +41,7 @@ import { getCirculatingTokenSupply } from "@/lib/ai/tools/get-token-supply";
 import { getCurrentTokenPrice } from "@/lib/ai/tools/get-token-price";
 import { getCirculatingMarketcap } from "@/lib/ai/tools/get-token-mcap";
 
-import { checkWalletTokenBalances } from "@/lib/ai/tools/get-wallet-token-balances";
+import { checkWalletBalances } from "@/lib/ai/tools/get-wallet-balances";
 
 import { searchTokens } from "@/lib/ai/tools/search-tokens";
 
@@ -98,7 +97,7 @@ export async function POST(request: Request) {
           system:
             'You are an AI assistant that processes wallet-related/trading-related tasks sequentially. For example when a user specifies a wallet (e.g., "using wallet-1"), first set that wallet as the active wallet before performing any wallet based actions. Otherwise use the current active wallet. Execute one tool at a time and wait for each step to complete before proceeding.', //systemPrompt({ selectedChatModel }),
           messages,
-          maxSteps: 6,
+          maxSteps: 10,
           // experimental_activeTools:
           //   selectedChatModel === "chat-model-reasoning"
           //     ? []
@@ -134,12 +133,9 @@ export async function POST(request: Request) {
             getActiveWallet: getActiveWallet({
               session,
             }),
-            checkBalance_activewallet: checkWalletBalance({
-              session,
-            }),
-            checkBalance_allwallets: checkWalletBalances({
-              session,
-            }),
+            // checkBalance_allwallets: checkWalletBalances({
+            //   session,
+            // }),
             transferSol: transferSol({
               session,
             }),
@@ -159,9 +155,7 @@ export async function POST(request: Request) {
             getCirculatingTokenSupply: getCirculatingTokenSupply(),
             getCurrentTokenPrice: getCurrentTokenPrice(),
             getTokenMarketcap: getCirculatingMarketcap(),
-            getWalletTokenBalances: checkWalletTokenBalances({
-              session,
-            }),
+            getWalletBalances: checkWalletBalances(),
             searchTokens: searchTokens(),
           },
           onFinish: async ({ response, reasoning }) => {

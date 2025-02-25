@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import crypto from "crypto";
 
-import { checkWalletBalanceApi } from "./wallet-balance-active";
+// import { checkWalletBalanceApi } from "./wallet-balance-active";
 
 import { isValidSolanaAddress } from "@/lib/utils";
 
@@ -35,10 +35,10 @@ export const orderBuyTokens = ({ session }: buyTokensProps) =>
         return `Failed to place order. Try again.`;
       }
 
-      const balanceResponce = await checkWalletBalanceApi(
-        userId,
-        userEncryptionKey
-      );
+      // const balanceResponce = await checkWalletBalanceApi(
+      //   userId,
+      //   userEncryptionKey
+      // );
 
       // if (Number(balanceResponce.balance) < 0.11 + amount) {
       //   return `Your wallet balance is ${balanceResponce.balance} sol, which is less than 0.11 sol + buy amount. You need at least 0.11 sol + buy amount. Mention about 0.11 sol, it's a must.`;
