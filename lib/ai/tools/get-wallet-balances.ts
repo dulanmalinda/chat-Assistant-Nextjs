@@ -11,7 +11,7 @@ import { isValidSolanaAddress } from "@/lib/utils";
 export const checkWalletBalances = () =>
   tool({
     description:
-      "Get token balances of wallet/wallets. First you must get the address/addresses of the mentioned wallet/wallets. If not use the address of the active wallet. If there are multiple wallets, should get the balances for all",
+      "Get token balances of wallet/wallets. First you must get the address/addresses of the mentioned wallet/wallets. If not use the address of the active wallet. If there are multiple wallets, should get the balances for all.",
     parameters: z.object({
       walletAddress: z.string(),
     }),
@@ -45,34 +45,51 @@ const deriveKey = (session: Session) => {
 };
 
 export const checkWalletBalancesApi = async (walletAddress: string) => {
-  try {
-    const apiKey = process.env.SOLANATRACKER_KEY;
+  const apiKey = process.env.SOLANATRACKER_KEY;
 
-    if (!apiKey) {
-      throw new Error(
-        "API Key is missing. Please set SOLANATRACKER_KEY in your environment variables."
-      );
-    }
-
-    const response = await fetch(
-      `https://data.solanatracker.io/wallet/${walletAddress}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-        },
-        // body: JSON.stringify({ userId, userPassword }),
-      }
+  if (!apiKey) {
+    throw new Error(
+      "API Key is missing. Please set SOLANATRACKER_KEY in your environment variables."
     );
+  }
 
-    if (!response.ok) {
-      return `Error: ${response.status} ${response.statusText}`;
+  let attempts = 0;
+  const maxAttempts = 3;
+  const delay = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
+  while (attempts < maxAttempts) {
+    try {
+      console.log(
+        `Attempt ${attempts + 1}: Fetching data for ${walletAddress}`
+      );
+
+      const response = await fetch(
+        `https://data.solanatracker.io/wallet/${walletAddress}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": apiKey,
+          },
+        }
+      );
+
+      if (response.ok) {
+        return await response.json();
+      } else {
+        console.warn(`Error: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error(`Error fetching wallet data ${walletAddress}:`, error);
     }
 
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching wallet data:", error);
-    return error;
+    attempts++;
+    if (attempts < maxAttempts) {
+      console.log(`Retrying in 1 second...`);
+      await delay(1000);
+    }
   }
+
+  return `Failed to fetch data for wallet ${walletAddress} after ${maxAttempts} attempts.`;
 };
