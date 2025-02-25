@@ -93,7 +93,8 @@ export async function POST(request: Request) {
       execute: (dataStream) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel }),
+          system:
+            'You are an AI assistant that processes wallet-related tasks sequentially. When a user specifies a wallet (e.g., "using wallet-1"), first set that wallet as active using setActiveWallet before performing any wallet based actions. Execute one tool at a time and wait for each step to complete before proceeding.', //systemPrompt({ selectedChatModel }),
           messages,
           maxSteps: 5,
           // experimental_activeTools:

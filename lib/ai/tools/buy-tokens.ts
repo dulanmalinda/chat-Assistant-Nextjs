@@ -38,6 +38,7 @@ export const buyTokens = ({ session }: buyTokensProps) =>
 
         if (!isValidSolanaAddress(address)) {
           const response = await searchTokensBySymbol(address);
+          console.log("responce");
           return {
             ...response,
             searchMessage: `Here are the search results for ${address}.`,
