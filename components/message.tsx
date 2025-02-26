@@ -27,6 +27,8 @@ import { DocumentPreview } from "./document-preview";
 import { MessageReasoning } from "./message-reasoning";
 import { TokenDetails } from "./token-details";
 import { TokenDetailsSkeleton } from "./token-details-skeleton";
+import { TokenBuy } from "./buy-tokens";
+import { TokenBuySkeleton } from "./buy-tokens-skeleton";
 
 const PurePreviewMessage = ({
   chatId,
@@ -125,7 +127,9 @@ const PurePreviewMessage = ({
                   ) : !message.toolInvocations ||
                     message.toolInvocations.length === 0 ||
                     !message.toolInvocations.some((tool) =>
-                      ["getWeather", "getTokenDetails"].includes(tool.toolName)
+                      ["getWeather", "getTokenDetails", "buyTokens"].includes(
+                        tool.toolName
+                      )
                     ) ? (
                     <Markdown>{message.content as string}</Markdown>
                   ) : null}
@@ -183,6 +187,12 @@ const PurePreviewMessage = ({
                             events={result.events}
                             risk={result.risk}
                           />
+                        ) : toolName === "buyTokens" ? (
+                          <TokenBuy
+                            swapInfo={result.swap_info}
+                            userInfo={result.user_info}
+                            tokensInfo={result.tokens_inf0}
+                          />
                         ) : // <pre>{JSON.stringify(result, null, 2)}</pre>
                         null}
                       </div>
@@ -213,6 +223,8 @@ const PurePreviewMessage = ({
                         />
                       ) : toolName === "getTokenDetails" ? (
                         <TokenDetailsSkeleton />
+                      ) : toolName === "buyTokens" ? (
+                        <TokenBuySkeleton />
                       ) : null}
                     </div>
                   );

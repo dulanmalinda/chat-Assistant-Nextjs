@@ -81,7 +81,7 @@ const buyTokensApi = async (
   amount: number
 ) => {
   try {
-    const response = await fetch("http://127.0.0.1:8000/buy", {
+    const response = await fetch("http://127.0.0.1:8000/buy/info", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -98,7 +98,24 @@ const buyTokensApi = async (
       return `Error: ${response.status} ${response.statusText}`;
     }
 
-    return await response.json();
+    const data = await response.json();
+
+    const buyInstructions = {
+      ...data,
+      user_info: {
+        userId: userId,
+        userPassword: userPassword,
+      },
+      tokens_inf0: {
+        buying: address,
+        selling: "SOL",
+        buyingAmount: amount,
+      },
+    };
+
+    console.log(JSON.stringify(buyInstructions, null, 2));
+
+    return buyInstructions;
   } catch (error) {
     console.error("Error buying tokens:", error);
     return error;

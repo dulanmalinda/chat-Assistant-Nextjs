@@ -6,6 +6,8 @@ import "dotenv/config";
 
 import crypto from "crypto";
 
+import axios from "axios";
+
 import { isValidSolanaAddress } from "@/lib/utils";
 
 export const checkWalletBalances = () =>
@@ -86,7 +88,7 @@ export const checkWalletBalancesApi = async (walletAddress: string) => {
 
     attempts++;
     if (attempts < maxAttempts) {
-      console.log(`Retrying in 1 second...`);
+      console.log("Retrying in 1 second...");
       await delay(1000);
     }
   }

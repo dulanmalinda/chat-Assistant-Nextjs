@@ -22,8 +22,6 @@ export const sellTokens = ({ session }: sellTokensProps) =>
       const userId = session.user?.email;
       const userEncryptionKey = deriveKey(session);
 
-      console.log("selll sdsds");
-
       let sellTokensResponce = "";
 
       if (userId && userEncryptionKey) {
