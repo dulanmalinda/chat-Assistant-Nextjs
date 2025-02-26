@@ -1,17 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { TokenBuySkeleton } from "./buy-tokens-skeleton";
 
 interface TokenBuyProps {
-  swapInfo: any;
   userInfo: any;
   tokensInfo: any;
   onTransactionComplete?: (status: "success" | "error") => void;
 }
 
 export function TokenBuy({
-  swapInfo,
   userInfo,
   tokensInfo,
   onTransactionComplete,
@@ -19,14 +18,81 @@ export function TokenBuy({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const transaction = swapInfo?.transactions[0];
+  const [shouldStopPolling, setShouldStopPolling] = useState(false);
+  const [dataReceived, setDataReceived] = useState(false);
+  const [swapData, setSwapData] = useState<any>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const fetchData = async () => {
+    setDataReceived(false);
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/buy/info", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          address: tokensInfo.buying,
+          amount: tokensInfo.buyingAmount,
+          userId: userInfo.userId,
+          userPassword: userInfo.userPassword,
+        }),
+      });
+
+      const data = await response.json();
+      setSwapData(data.swap_info);
+      console.log("API Response:", data.swap_info);
+
+      setDataReceived(true);
+
+      if (shouldStopPolling) {
+        stopPolling();
+      }
+    } catch (error) {
+      console.error("Fetch Error:", error);
+    }
+  };
+
+  const startPolling = (intervalMs = 30000) => {
+    if (intervalRef.current) return;
+
+    fetchData();
+
+    intervalRef.current = setInterval(() => {
+      setShouldStopPolling((prev) => {
+        if (!prev) {
+          fetchData();
+        } else {
+          stopPolling();
+        }
+        return prev;
+      });
+    }, intervalMs);
+  };
+
+  const stopPolling = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    startPolling();
+
+    return () => stopPolling();
+  }, []);
 
   const handleBuy = async () => {
+    const transaction = swapData?.transactions[0];
+
     if (!transaction) {
       setError("Transaction data is missing.");
       return;
     }
 
+    setShouldStopPolling(true);
     setLoading(true);
     setError("");
 
@@ -65,7 +131,7 @@ export function TokenBuy({
     onTransactionComplete?.("error");
   };
 
-  return (
+  return swapData && dataReceived ? (
     <div className="flex flex-col gap-4 rounded-2xl p-4 bg-gray-900 max-w-lg text-white">
       <h2 className="text-lg font-semibold">Buy Token</h2>
 
@@ -73,26 +139,26 @@ export function TokenBuy({
         <div>
           Out Amount:{" "}
           <span className="text-green-400">
-            {swapInfo?.outAmount.toFixed(4)}
+            {swapData?.outAmount.toFixed(4)}
           </span>
         </div>
         <div>
           Min Out Amount:{" "}
           <span className="text-yellow-400">
-            {swapInfo?.outAmountMin.toFixed(4)}
+            {swapData?.outAmountMin.toFixed(4)}
           </span>
         </div>
         <div>
           Price Impact:{" "}
           <span className="text-red-400">
-            {swapInfo?.priceImpact.percent.toFixed(6)}%
+            {swapData?.priceImpact.percent.toFixed(6)}%
           </span>
         </div>
         <div>
           Fee:{" "}
           <span className="text-gray-400">
-            {swapInfo?.fees[0]?.amount.toFixed(6)} SOL (
-            {swapInfo?.fees[0]?.percent * 100}%)
+            {swapData?.fees[0]?.amount.toFixed(6)} SOL (
+            {swapData?.fees[0]?.percent * 100}%)
           </span>
         </div>
       </div>
@@ -115,5 +181,7 @@ export function TokenBuy({
         </Button>
       </div>
     </div>
+  ) : (
+    <TokenBuySkeleton />
   );
 }

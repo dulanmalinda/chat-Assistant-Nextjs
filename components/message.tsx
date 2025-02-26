@@ -189,9 +189,8 @@ const PurePreviewMessage = ({
                           />
                         ) : toolName === "buyTokens" ? (
                           <TokenBuy
-                            swapInfo={result.swap_info}
                             userInfo={result.user_info}
-                            tokensInfo={result.tokens_inf0}
+                            tokensInfo={result.tokens_info}
                           />
                         ) : // <pre>{JSON.stringify(result, null, 2)}</pre>
                         null}

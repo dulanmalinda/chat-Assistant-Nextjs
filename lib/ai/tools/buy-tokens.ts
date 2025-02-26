@@ -15,7 +15,7 @@ interface buyTokensProps {
 export const buyTokens = ({ session }: buyTokensProps) =>
   tool({
     description:
-      "Buy Tokens with Sol. First you must check the wallet balance annd confirm that its grater than the buy amount + 0.11 sol.",
+      "Buy Tokens with Sol. First you must check the wallet balance and confirm that its grater than the buy amount + 0.11 sol. This does not submit the transactions to the network. Pops up the component so user can accept and submit the transaction",
     parameters: z.object({
       address: z.string(),
       amount: z.number(),
@@ -49,14 +49,28 @@ export const buyTokens = ({ session }: buyTokensProps) =>
           return `could not find any tokens for ${address}. Please try using contract address of the token`;
         }
 
-        const responce = await buyTokensApi(
-          userId,
-          userEncryptionKey,
-          address,
-          amount
-        );
-        buyTokensResponce = responce;
-        return buyTokensResponce;
+        // const responce = await buyTokensApi(
+        //   userId,
+        //   userEncryptionKey,
+        //   address,
+        //   amount
+        // );
+
+        const buyInstructions = {
+          user_info: {
+            userId: userId,
+            userPassword: userEncryptionKey,
+          },
+          tokens_info: {
+            buying: address,
+            selling: "SOL",
+            buyingAmount: amount,
+          },
+        };
+
+        // buyTokensResponce = JSON.stringify(buyInstructions);
+        // console.log(buyTokensResponce);
+        return buyInstructions;
       }
 
       buyTokensResponce = `Failed to buy tokens. Try again.`;
