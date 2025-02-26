@@ -23,6 +23,11 @@ export function TokenBuy({
   const [swapData, setSwapData] = useState<any>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  const [transactionStatus, setTransactionStatus] = useState<
+    "pending" | "success" | "error" | null
+  >(null);
+  const [transactionId, setTransactionId] = useState<string | null>(null);
+
   const fetchData = async () => {
     setDataReceived(false);
 
@@ -95,14 +100,13 @@ export function TokenBuy({
     setShouldStopPolling(true);
     setLoading(true);
     setError("");
+    setTransactionStatus("pending");
 
     try {
       const response = await fetch("http://127.0.0.1:8000/buy/instructions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          //   address: tokensInfo.buying,
-          //   amount: tokensInfo.buyingAmount,
           userId: userInfo.userId,
           userPassword: userInfo.userPassword,
           instructions: transaction.content,
@@ -113,6 +117,8 @@ export function TokenBuy({
 
       if (response.ok) {
         console.log("Transaction successful:", data);
+        setTransactionStatus("success");
+        setTransactionId(data.transaction_id.signature);
         onTransactionComplete?.("success");
       } else {
         throw new Error(data.message || "Transaction failed.");
@@ -120,6 +126,7 @@ export function TokenBuy({
     } catch (error: any) {
       console.error("Transaction error:", error);
       setError(error.message);
+      setTransactionStatus("error");
       onTransactionComplete?.("error");
     } finally {
       setLoading(false);
@@ -128,6 +135,7 @@ export function TokenBuy({
 
   const handleReject = () => {
     console.log("Transaction rejected by the user.");
+    setTransactionStatus("error");
     onTransactionComplete?.("error");
   };
 
@@ -165,21 +173,29 @@ export function TokenBuy({
 
       {error && <p className="text-red-500 text-sm">{error}</p>}
 
-      <div className="flex gap-2">
-        <Button
-          onClick={handleBuy}
-          disabled={loading}
-          className="flex-1 bg-blue-500 hover:bg-blue-600"
-        >
-          {loading ? "Processing..." : "Confirm Purchase"}
-        </Button>
-        <Button
-          onClick={handleReject}
-          className="flex-1 bg-red-500 hover:bg-red-600"
-        >
-          Reject
-        </Button>
-      </div>
+      {transactionStatus === "success" ? (
+        <p className="text-green-400 text-sm break-words whitespace-pre-wrap">
+          Transaction successful! TX ID: {transactionId}
+        </p>
+      ) : transactionStatus === "error" ? (
+        <p className="text-red-400 text-sm">Transaction rejected or failed.</p>
+      ) : (
+        <div className="flex gap-2">
+          <Button
+            onClick={handleBuy}
+            disabled={loading}
+            className="flex-1 bg-blue-500 hover:bg-blue-600"
+          >
+            {loading ? "Processing..." : "Confirm Purchase"}
+          </Button>
+          <Button
+            onClick={handleReject}
+            className="flex-1 bg-red-500 hover:bg-red-600"
+          >
+            Reject
+          </Button>
+        </div>
+      )}
     </div>
   ) : (
     <TokenBuySkeleton />
