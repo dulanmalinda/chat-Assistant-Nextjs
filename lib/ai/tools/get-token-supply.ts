@@ -9,7 +9,7 @@ import "dotenv/config";
 export const getCirculatingTokenSupply = () =>
   tool({
     description:
-      "Get current supply of a token. if the CA is not provided search for the token and then get the supply",
+      "Get current supply of a token. Must check whether the provided CA is valid before proceeding. If a CA is not provided search for the token.",
     parameters: z.object({
       address: z.string(),
     }),

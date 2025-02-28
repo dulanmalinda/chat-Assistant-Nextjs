@@ -9,7 +9,7 @@ import "dotenv/config";
 export const getCirculatingMarketcap = () =>
   tool({
     description:
-      "To get the circulating market cap of a token. responce should be in USD",
+      "To get the circulating market cap of a token. responce should be in USD. Must check whether the provided CA is valid before proceeding. If a CA is not provided search for the token.",
     parameters: z.object({
       address: z.string(),
     }),
@@ -58,12 +58,11 @@ const getCirculatingTokenSupply = async (address: string): Promise<number> => {
 const getCurrentTokenPrice = async (address: string): Promise<number> => {
   try {
     const response = await fetch(
-      `https://solana-gateway.moralis.io/token/mainnet/${address}/price`,
+      `http://127.0.0.1:8000/token/${address}/price`,
       {
         method: "GET",
         headers: {
           accept: "application/json",
-          "X-API-Key": process.env.MORALIS_API_KEY as string,
         },
       }
     );

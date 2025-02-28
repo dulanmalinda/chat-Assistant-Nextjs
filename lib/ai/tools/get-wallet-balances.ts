@@ -13,7 +13,7 @@ import { isValidSolanaAddress } from "@/lib/utils";
 export const checkWalletBalances = () =>
   tool({
     description:
-      "Get token balances of wallet/wallets. First you must get the address/addresses of the mentioned wallet/wallets. If not use the address of the active wallet.",
+      "Get token balances of wallet/wallets. First you must get the address/addresses of the mentioned wallet/wallets. If not use the address of the active wallet. (Make sure you get the wallet addresses correctly.)",
     parameters: z.object({
       walletAddresses: z.array(z.string()),
     }),
@@ -36,8 +36,6 @@ const deriveKey = (session: Session) => {
 
 export const checkWalletBalancesApi = async (walletAddresses: string[]) => {
   try {
-    console.log(`Fetching data for wallets:`, walletAddresses);
-
     const response = await fetch(`http://127.0.0.1:8000/wallets/balances`, {
       method: "POST",
       headers: {
@@ -48,12 +46,12 @@ export const checkWalletBalancesApi = async (walletAddresses: string[]) => {
 
     if (!response.ok) {
       console.warn(`Error: ${response.status} ${response.statusText}`);
-      return null;
+      return response.statusText;
     }
 
     return await response.json();
   } catch (error) {
     console.error(`Error fetching wallet balances:`, error);
-    return null;
+    return error;
   }
 };

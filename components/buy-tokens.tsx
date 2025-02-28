@@ -28,6 +28,20 @@ export function TokenBuy({
   >(null);
   const [transactionId, setTransactionId] = useState<string | null>(null);
 
+  const [tokenDetails, setTokenDetails] = useState<any>(null);
+
+  const fetchTokenDetails = async () => {
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/token/${tokensInfo.buying}`
+      );
+      const data = await response.json();
+      setTokenDetails(data.token);
+    } catch (error) {
+      console.error("Error fetching token details:", error);
+    }
+  };
+
   const fetchData = async () => {
     setDataReceived(false);
 
@@ -85,6 +99,7 @@ export function TokenBuy({
 
   useEffect(() => {
     startPolling();
+    fetchTokenDetails();
 
     return () => stopPolling();
   }, []);
@@ -139,35 +154,72 @@ export function TokenBuy({
     onTransactionComplete?.("error");
   };
 
-  return swapData && dataReceived ? (
-    <div className="flex flex-col gap-4 rounded-2xl p-4 bg-gray-900 max-w-lg text-white">
-      <h2 className="text-lg font-semibold">Buy Token</h2>
+  return swapData && dataReceived && tokenDetails ? (
+    <div className="flex flex-col gap-4 rounded-2xl p-6 bg-gray-900 max-w-lg text-white">
+      <h2 className="text-2xl font-semibold flex items-center gap-2">
+        <span className="text-white py-1 rounded-full">Swap</span>
+      </h2>
 
       <div className="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          Out Amount:{" "}
-          <span className="text-green-400">
-            {swapData?.outAmount.toFixed(4)}
-          </span>
+        <div>Selling</div>
+        <div className="text-blue-400">
+          {tokensInfo.selling}
+          {/* <a
+            href={`http://127.0.0.1:8000/token/${tokensInfo.selling}`}
+            className="text-blue-500 underline ml-1"
+          >
+            View
+          </a> */}
         </div>
-        <div>
-          Min Out Amount:{" "}
-          <span className="text-yellow-400">
-            {swapData?.outAmountMin.toFixed(4)}
-          </span>
+
+        <div>Buying</div>
+        <div className="text-blue-400">
+          {tokenDetails ? (
+            <>
+              {tokenDetails.name} ({tokenDetails.symbol})
+              {/* <a
+                href={tokenDetails.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 underline ml-2"
+              >
+                Website
+              </a> */}
+            </>
+          ) : (
+            <span className="text-gray-400">Loading...</span>
+          )}
         </div>
-        <div>
-          Price Impact:{" "}
-          <span className="text-red-400">
-            {swapData?.priceImpact.percent.toFixed(6)}%
-          </span>
+
+        {/* {tokenDetails?.image && (
+          <div className="col-span-2 flex justify-center">
+            <img
+              src={tokenDetails.image}
+              alt={tokenDetails.name}
+              className="w-12 h-12 rounded-full mt-2"
+            />
+          </div>
+        )} */}
+
+        <div>Amount Selling</div>
+        <div className="text-red-400">-{tokensInfo.buyingAmount} SOL</div>
+
+        <div>Amount Buying</div>
+        <div className="text-green-400">
+          +{swapData?.outAmount.toFixed(2)} {tokenDetails?.symbol || "Token"}
         </div>
-        <div>
-          Fee:{" "}
-          <span className="text-gray-400">
-            {swapData?.fees[0]?.amount.toFixed(6)} SOL (
-            {swapData?.fees[0]?.percent * 100}%)
-          </span>
+
+        {/* <div>Slippage</div>
+        <div className="text-white">{swapData?.slippage || 0}%</div> */}
+
+        {/* <div>MEV Protect</div>
+        <div className={`text-${swapData?.mevProtect ? "green" : "red"}-400`}>
+          {swapData?.mevProtect ? "Yes" : "No"}
+        </div> */}
+
+        <div>Price Impact</div>
+        <div className="text-red-400">
+          {swapData?.priceImpact.percent.toFixed(2)}%
         </div>
       </div>
 
@@ -184,15 +236,15 @@ export function TokenBuy({
           <Button
             onClick={handleBuy}
             disabled={loading}
-            className="flex-1 bg-blue-500 hover:bg-blue-600"
+            className="flex-1 bg-green-500 hover:bg-green-600 text-black font-bold py-2 px-4 rounded-lg"
           >
-            {loading ? "Processing..." : "Confirm Purchase"}
+            {loading ? "Processing..." : "CONFIRM"}
           </Button>
           <Button
             onClick={handleReject}
-            className="flex-1 bg-red-500 hover:bg-red-600"
+            className="flex-1 bg-transparent text-gray-400 font-bold py-2 px- rounded-lg hover:text-gray-500 hover:bg-transparent"
           >
-            Reject
+            REJECT/EDIT
           </Button>
         </div>
       )}

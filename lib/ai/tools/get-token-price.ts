@@ -6,29 +6,20 @@ import "dotenv/config";
 export const getCurrentTokenPrice = () =>
   tool({
     description:
-      "Get current price of a token. if the CA is not provided search for the token and then get the price",
+      "Get current price of a token. Must check whether the provided CA is valid before proceeding. If a CA is not provided search for the token.",
     parameters: z.object({
       address: z.string(),
     }),
     execute: async ({ address }) => {
       let priceResponse = "";
 
-      const apiKey = process.env.SOLANATRACKER_KEY;
-
-      if (!apiKey) {
-        throw new Error(
-          "API Key is missing. Please set SOLANATRACKER_KEY in your environment variables."
-        );
-      }
-
       try {
         const response = await fetch(
-          `https://data.solanatracker.io/price?token=${address}`,
+          `http://127.0.0.1:8000/token/${address}/price`,
           {
             method: "GET",
             headers: {
               accept: "application/json",
-              "X-API-Key": apiKey,
             },
           }
         );

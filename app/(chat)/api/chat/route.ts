@@ -45,6 +45,8 @@ import { checkWalletBalances } from "@/lib/ai/tools/get-wallet-balances";
 
 import { searchTokens } from "@/lib/ai/tools/search-tokens";
 
+import { isValidCA } from "@/lib/ai/tools/is-valid-ca";
+
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
@@ -157,6 +159,7 @@ export async function POST(request: Request) {
             getTokenMarketcap: getCirculatingMarketcap(),
             getWalletBalances: checkWalletBalances(),
             searchTokens: searchTokens(),
+            isValidCA: isValidCA(),
           },
           onFinish: async ({ response, reasoning }) => {
             if (session.user?.email) {

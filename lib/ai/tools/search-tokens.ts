@@ -7,7 +7,7 @@ import "dotenv/config";
 
 export const searchTokens = () =>
   tool({
-    description: "Search for tokens with symbol, name, or address.",
+    description: "Search for tokens with symbol, name or ticker.",
     parameters: z.object({
       search_param: z.string(),
     }),
@@ -19,25 +19,12 @@ export const searchTokens = () =>
 
 const searchTokensApi = async (search_param: string) => {
   try {
-    const apiKey = process.env.SOLANATRACKER_KEY;
-
-    if (!apiKey) {
-      throw new Error(
-        "API Key is missing. Please set SOLANATRACKER_KEY in your environment variables."
-      );
-    }
-
-    // console.log(
-    //   `https://data.solanatracker.io/search?query=${search_param}&limit=10&page=1`
-    // );
-
     const response = await fetch(
-      `https://data.solanatracker.io/search?query=${search_param}&limit=10&page=1`,
+      `http://127.0.0.1:8000/tokens/${search_param}`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": apiKey,
         },
       }
     );
