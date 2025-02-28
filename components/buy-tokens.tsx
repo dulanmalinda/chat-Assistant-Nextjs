@@ -33,7 +33,7 @@ export function TokenBuy({
   const fetchTokenDetails = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/token/${tokensInfo.buying}`
+        `https://app.armorwallet.io:8000/token/${tokensInfo.buying}`
       );
       const data = await response.json();
       setTokenDetails(data.token);
@@ -46,7 +46,7 @@ export function TokenBuy({
     setDataReceived(false);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/buy/info", {
+      const response = await fetch("https://app.armorwallet.io:8000/buy/info", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -118,15 +118,18 @@ export function TokenBuy({
     setTransactionStatus("pending");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/buy/instructions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: userInfo.userId,
-          userPassword: userInfo.userPassword,
-          instructions: transaction.content,
-        }),
-      });
+      const response = await fetch(
+        "https://app.armorwallet.io:8000/buy/instructions",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: userInfo.userId,
+            userPassword: userInfo.userPassword,
+            instructions: transaction.content,
+          }),
+        }
+      );
 
       const data = await response.json();
 
