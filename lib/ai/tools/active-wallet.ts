@@ -14,7 +14,8 @@ interface setWalletsProps {
 
 export const getActiveWallet = ({ session }: getWalletsProps) =>
   tool({
-    description: "Get my wallet (usually the active wallet).",
+    description:
+      "Get active wallet details of the user. including wallet name, address, mnemonic and private key",
     parameters: z.object({}),
     execute: async ({}) => {
       const userId = session.user?.email;
@@ -34,7 +35,7 @@ export const getActiveWallet = ({ session }: getWalletsProps) =>
 
 export const setActiveWallet = ({ session }: setWalletsProps) =>
   tool({
-    description: "Set my active wallet",
+    description: "Set active wallet",
     parameters: z.object({
       wallet_name: z.string(),
     }),
@@ -86,7 +87,8 @@ const getActiveWalletApi = async (userId: string, userPassword: string) => {
       return `Error: ${response.status} ${response.statusText}`;
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error("Error fetching wallet data:", error);
     return error;

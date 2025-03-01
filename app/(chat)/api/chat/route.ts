@@ -7,7 +7,7 @@ import {
 
 import { auth } from "@/app/(auth)/auth";
 import { myProvider } from "@/lib/ai/models";
-import { systemPrompt } from "@/lib/ai/prompts";
+import { traderPrompt } from "@/lib/ai/prompts";
 import {
   deleteChatById,
   getChatById,
@@ -96,8 +96,7 @@ export async function POST(request: Request) {
       execute: (dataStream) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system:
-            'You are an AI assistant that processes wallet-related/trading-related tasks sequentially. For example when a user specifies a wallet (e.g., "using wallet-1"), first set that wallet as the active wallet before performing any wallet based actions. Otherwise use the current active wallet. Execute one tool at a time and wait for each step to complete before proceeding.', //systemPrompt({ selectedChatModel }),
+          system: traderPrompt,
           messages,
           maxSteps: 10,
           // experimental_activeTools:

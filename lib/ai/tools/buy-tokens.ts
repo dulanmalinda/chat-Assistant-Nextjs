@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import crypto from "crypto";
 
-// import { checkWalletBalanceApi } from "./wallet-balance-active";
+import { checkWalletBalancesApi } from "./get-wallet-balances";
 
 import { isValidSolanaAddress } from "@/lib/utils";
 
@@ -15,28 +15,32 @@ interface buyTokensProps {
 export const buyTokens = ({ session }: buyTokensProps) =>
   tool({
     description:
-      "Buy Tokens with Sol. First you must check the wallet balance and confirm that its grater than the buy amount + 0.2 sol. This does not submit the transactions to the network. Pops up the component so user can accept and submit the transaction",
+      "Buy Tokens with Sol. This does not submit the transactions to the network. Pops up the component so user can accept and submit the transaction",
     parameters: z.object({
-      address: z.string(),
+      // walletAddress: z.string(),
+      tokenAddress: z.string(),
       amount: z.number(),
     }),
-    execute: async ({ address, amount }) => {
+    execute: async ({ tokenAddress, amount }) => {
       const userId = session.user?.email;
       const userEncryptionKey = deriveKey(session);
 
       let buyTokensResponce = "";
 
       if (userId && userEncryptionKey) {
-        // const balanceResponce = await checkWalletBalanceApi(
-        //   userId,
-        //   userEncryptionKey
+        // const balanceResponce = await checkWalletBalancesApi([walletAddress]);
+
+        // const solToken = balanceResponce.balances[walletAddress].tokens.find(
+        //   (token: { token: { symbol: string } }) => token.token.symbol === "SOL"
         // );
-        // if (Number(balanceResponce.balance) < 0.11 + amount) {
-        //   buyTokensResponce = `Your wallet balance is ${balanceResponce.balance} sol, which is less than 0.11 sol + buy amount. You need at least 0.11 sol + buy amount. mention about 0.11 sol, its a must`;
+        // const solBalance = solToken ? Number(solToken.balance) : 0;
+
+        // if (solBalance < 0.2 + amount) {
+        //   buyTokensResponce = `Your wallet balance is ${solBalance} SOL, which is less than 0.2 SOL + ${amount} SOL buy amount. You need at least 0.2 SOL (minimum required) + ${amount} SOL for the purchase.`;
         //   return buyTokensResponce;
         // }
 
-        if (!isValidSolanaAddress(address)) {
+        if (!isValidSolanaAddress(tokenAddress)) {
           // const response = await searchTokensBySymbol(address);
           // console.log("responce");
           // return {
@@ -46,7 +50,7 @@ export const buyTokens = ({ session }: buyTokensProps) =>
           //     "⚠️ Please use the CA of the token for on-chain activities and detailed information about the token metadata.",
           // };
 
-          return `could not find any tokens for ${address}. Please try using contract address of the token`;
+          return `could not find any tokens for ${tokenAddress}. Please try using contract address of the token`;
         }
 
         // const responce = await buyTokensApi(
@@ -62,7 +66,7 @@ export const buyTokens = ({ session }: buyTokensProps) =>
             userPassword: userEncryptionKey,
           },
           tokens_info: {
-            buying: address,
+            buying: tokenAddress,
             selling: "SOL",
             buyingAmount: amount,
           },

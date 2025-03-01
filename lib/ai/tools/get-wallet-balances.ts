@@ -13,13 +13,12 @@ import { isValidSolanaAddress } from "@/lib/utils";
 export const checkWalletBalances = () =>
   tool({
     description:
-      "Get token balances of wallet/wallets. First you must get the address/addresses of the mentioned wallet/wallets. If not use the address of the active wallet. (Make sure you get the wallet addresses correctly.)",
+      "Get token balances of wallet/wallets. First you must get the address/addresses of the mentioned wallet/wallets. If no any wallets mentioned get the address of the active wallet.",
     parameters: z.object({
       walletAddresses: z.array(z.string()),
     }),
     execute: async ({ walletAddresses }) => {
       const responce = await checkWalletBalancesApi(walletAddresses);
-
       return responce;
     },
   });
