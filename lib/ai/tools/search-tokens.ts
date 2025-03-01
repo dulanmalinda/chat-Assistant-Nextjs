@@ -8,7 +8,7 @@ import "dotenv/config";
 export const searchTokens = () =>
   tool({
     description:
-      "Search for tokens with symbol, name or ticker. Always provide the details to user to select. Dont proceed without user approval",
+      "Search for tokens with symbol, name or ticker. Always display the search list and do not select a token unless the user explicitly specifies which one to choose",
     parameters: z.object({
       search_param: z.string(),
     }),
