@@ -15,7 +15,7 @@ interface buyTokensProps {
 export const buyTokens = ({ session }: buyTokensProps) =>
   tool({
     description:
-      "Buy Tokens with Sol. First you must check the wallet balance and confirm that its grater than the buy amount + 0.12 sol. This does not submit the transactions to the network. Pops up the component so user can accept and submit the transaction",
+      "Buy Tokens with Sol. First you must check the wallet balance and confirm that its grater than the buy amount + 0.2 sol. This does not submit the transactions to the network. Pops up the component so user can accept and submit the transaction",
     parameters: z.object({
       address: z.string(),
       amount: z.number(),
