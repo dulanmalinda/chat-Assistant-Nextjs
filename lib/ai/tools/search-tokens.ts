@@ -7,7 +7,8 @@ import "dotenv/config";
 
 export const searchTokens = () =>
   tool({
-    description: "Search for tokens with symbol, name or ticker.",
+    description:
+      "Search for tokens with symbol, name or ticker. Always provide the details to user to select. Dont proceed without user approval",
     parameters: z.object({
       search_param: z.string(),
     }),
@@ -32,8 +33,9 @@ const searchTokensApi = async (search_param: string) => {
     if (!response.ok) {
       return `Error: ${response.status} ${response.statusText}`;
     }
+    const data = await response.json();
 
-    return await response.json();
+    return data;
   } catch (error) {
     console.error("Error fetching wallets:", error);
     return error;

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { TokenBuySkeleton } from "./buy-tokens-skeleton";
+import { TokenBuyError } from "./buy-tokens-error";
 
 interface TokenBuyProps {
   userInfo: any;
@@ -156,11 +157,26 @@ export function TokenBuy({
 
   const handleReject = () => {
     console.log("Transaction rejected by the user.");
+    setShouldStopPolling(true);
     setTransactionStatus("error");
     onTransactionComplete?.("error");
   };
 
-  return swapData && dataReceived && tokenDetails ? (
+  if (!swapData || !dataReceived || !tokenDetails) {
+    return <TokenBuySkeleton />;
+  }
+
+  if (!swapData?.outAmount) {
+    return (
+      <TokenBuyError
+        tokenDetails={tokenDetails}
+        tokensInfo={tokensInfo}
+        errorMessage="Unable to generate swap data for this token"
+      />
+    );
+  }
+
+  return (
     <div className="flex flex-col gap-4 rounded-2xl p-6 bg-gray-900 max-w-lg text-white">
       <h2 className="text-2xl font-semibold flex items-center gap-2">
         <span className="text-white py-1 rounded-full">Swap</span>
@@ -168,60 +184,26 @@ export function TokenBuy({
 
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>Selling</div>
-        <div className="text-blue-400">
-          {tokensInfo.selling}
-          {/* <a
-            href={`http://127.0.0.1:8000/token/${tokensInfo.selling}`}
-            className="text-blue-500 underline ml-1"
-          >
-            View
-          </a> */}
-        </div>
+        <div className="text-blue-400">{tokensInfo.selling}</div>
 
         <div>Buying</div>
         <div className="text-blue-400">
           {tokenDetails ? (
             <>
               {tokenDetails.name} ({tokenDetails.symbol})
-              {/* <a
-                href={tokenDetails.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 underline ml-2"
-              >
-                Website
-              </a> */}
             </>
           ) : (
             <span className="text-gray-400">Loading...</span>
           )}
         </div>
 
-        {/* {tokenDetails?.image && (
-          <div className="col-span-2 flex justify-center">
-            <img
-              src={tokenDetails.image}
-              alt={tokenDetails.name}
-              className="w-12 h-12 rounded-full mt-2"
-            />
-          </div>
-        )} */}
-
         <div>Amount Selling</div>
         <div className="text-red-400">-{tokensInfo.buyingAmount} SOL</div>
 
         <div>Amount Buying</div>
         <div className="text-green-400">
-          +{swapData?.outAmount.toFixed(2)} {tokenDetails?.symbol || "Token"}
+          +{swapData.outAmount.toFixed(2)} {tokenDetails?.symbol || "Token"}
         </div>
-
-        {/* <div>Slippage</div>
-        <div className="text-white">{swapData?.slippage || 0}%</div> */}
-
-        {/* <div>MEV Protect</div>
-        <div className={`text-${swapData?.mevProtect ? "green" : "red"}-400`}>
-          {swapData?.mevProtect ? "Yes" : "No"}
-        </div> */}
 
         <div>Price Impact</div>
         <div className="text-red-400">
@@ -255,7 +237,5 @@ export function TokenBuy({
         </div>
       )}
     </div>
-  ) : (
-    <TokenBuySkeleton />
   );
 }
