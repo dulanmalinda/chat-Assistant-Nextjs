@@ -214,7 +214,7 @@ export function TokenBuy({
       {error && <p className="text-red-500 text-sm">{error}</p>}
 
       {transactionStatus === "success" ? (
-        <p className="text-green-400 text-sm break-words whitespace-pre-wrap">
+        <p className="text-green-400 text-sm break-words break-all whitespace-pre-wrap w-full overflow-hidden">
           Transaction successful! TX ID: {transactionId}
         </p>
       ) : transactionStatus === "error" ? (

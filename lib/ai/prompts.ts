@@ -107,7 +107,7 @@ export const traderPrompt = `
     
     1. **Wallet Handling**:
        - When a user specifies a wallet (e.g., "using wallet-1"), first **set that wallet as the active wallet** before performing any wallet-based actions.
-       - If no wallet is specified, use the **current active wallet**.
+       - If no wallet is specified, **always use the currently active wallet** without asking for a selection.
     
     2. **Execution Order**:
        - Execute **one tool at a time** and **wait for each step to complete** before proceeding.
