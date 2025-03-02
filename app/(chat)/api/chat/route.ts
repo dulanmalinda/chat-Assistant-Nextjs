@@ -143,9 +143,7 @@ export async function POST(request: Request) {
             transferTokens: transferTokens({
               session,
             }),
-            buyTokens: buyTokens({
-              session,
-            }),
+            buyTokens: buyTokens(),
             sellTokens: sellTokens({
               session,
             }),

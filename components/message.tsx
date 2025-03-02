@@ -190,10 +190,7 @@ const PurePreviewMessage = ({
                             risk={result.risk}
                           />
                         ) : toolName === "buyTokens" ? (
-                          <TokenBuy
-                            userInfo={result.user_info}
-                            tokensInfo={result.tokens_info}
-                          />
+                          <TokenBuy tokensInfo={result.tokens_info} />
                         ) : toolName === "searchTokens" ? (
                           <TokenSearch
                             results={result.data}

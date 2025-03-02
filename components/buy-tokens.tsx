@@ -6,16 +6,11 @@ import { TokenBuySkeleton } from "./buy-tokens-skeleton";
 import { TokenBuyError } from "./buy-tokens-error";
 
 interface TokenBuyProps {
-  userInfo: any;
   tokensInfo: any;
   onTransactionComplete?: (status: "success" | "error") => void;
 }
 
-export function TokenBuy({
-  userInfo,
-  tokensInfo,
-  onTransactionComplete,
-}: TokenBuyProps) {
+export function TokenBuy({ tokensInfo, onTransactionComplete }: TokenBuyProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -47,21 +42,16 @@ export function TokenBuy({
     setDataReceived(false);
 
     try {
-      const response = await fetch(
-        "https://app.armorwallet.io/api-python/buy/info",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            address: tokensInfo.buying,
-            amount: tokensInfo.buyingAmount,
-            userId: userInfo.userId,
-            userPassword: userInfo.userPassword,
-          }),
-        }
-      );
+      const response = await fetch("/api/buy-token/info", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          address: tokensInfo.buying,
+          amount: tokensInfo.buyingAmount,
+        }),
+      });
 
       const data = await response.json();
       setSwapData(data.swap_info);
@@ -122,18 +112,13 @@ export function TokenBuy({
     setTransactionStatus("pending");
 
     try {
-      const response = await fetch(
-        "https://app.armorwallet.io/api-python/buy/instructions",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: userInfo.userId,
-            userPassword: userInfo.userPassword,
-            instructions: transaction.content,
-          }),
-        }
-      );
+      const response = await fetch("/api/buy-token/instructions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          instructions: transaction.content,
+        }),
+      });
 
       const data = await response.json();
 
