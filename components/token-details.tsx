@@ -79,7 +79,9 @@ export function TokenDetails({
           <div className="text-lg font-semibold">
             {token.name} ({token.symbol})
           </div>
-          <div className="text-sm text-gray-400">{token.mint}</div>
+          <div className="text-xs text-gray-400 break-all overflow-wrap-break-word">
+            {token.mint}
+          </div>
         </div>
       </div>
 
