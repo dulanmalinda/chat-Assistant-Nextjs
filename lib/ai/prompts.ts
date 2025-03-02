@@ -118,7 +118,8 @@ export const traderPrompt = `
        - For Buy Tokens with SOL, first retrieve the active wallet address, then check that the SOL balance of the active wallet is greater than 0.2 + the buy amount; otherwise, do not execute the transaction.
     
     4. **Token Search**:
-       - When searching for tokens, **always display the search list** and **do not select a token** unless the user explicitly specifies which one to choose.
+        - When searching for tokens, **indicate that several tokens were found** and **do not list all options** unless the user explicitly requests more details or specifies a token.
+        - Always **do not select a token** unless the user explicitly specifies which one to choose.
     
     Follow these rules strictly to ensure smooth and error-free processing of wallet and trading tasks.
     
