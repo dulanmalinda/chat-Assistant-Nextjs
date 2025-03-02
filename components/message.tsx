@@ -29,6 +29,8 @@ import { TokenDetails } from "./token-details";
 import { TokenDetailsSkeleton } from "./token-details-skeleton";
 import { TokenBuy } from "./buy-tokens";
 import { TokenBuySkeleton } from "./buy-tokens-skeleton";
+import { TokenSearch } from "./search-tokens";
+import { TokenSearchSkeleton } from "./search-tokens-skeleton";
 
 const PurePreviewMessage = ({
   chatId,
@@ -192,6 +194,11 @@ const PurePreviewMessage = ({
                             userInfo={result.user_info}
                             tokensInfo={result.tokens_info}
                           />
+                        ) : toolName === "searchTokens" ? (
+                          <TokenSearch
+                            results={result.data}
+                            total={result.total}
+                          />
                         ) : // <pre>{JSON.stringify(result, null, 2)}</pre>
                         null}
                       </div>
@@ -224,6 +231,8 @@ const PurePreviewMessage = ({
                         <TokenDetailsSkeleton />
                       ) : toolName === "buyTokens" ? (
                         <TokenBuySkeleton />
+                      ) : toolName === "searchTokens" ? (
+                        <TokenSearchSkeleton />
                       ) : null}
                     </div>
                   );
