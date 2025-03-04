@@ -13,42 +13,24 @@ interface sellTokensProps {
 export const sellTokens = ({ session }: sellTokensProps) =>
   tool({
     description:
-      "Sell Tokens. First you must check whether the wallet has sufficient tokens to sell.",
+      "Sell Tokens. This does not submit the transactions to the network. Pops up the component so user can accept and submit the transaction",
     parameters: z.object({
-      address: z.string(),
+      tokenAddress: z.string(),
       amount: z.number(),
     }),
-    execute: async ({ address, amount }) => {
+    execute: async ({ tokenAddress, amount }) => {
       const userId = session.user?.email;
       const userEncryptionKey = deriveKey(session);
 
-      let sellTokensResponce = "";
+      const sellInstructions = {
+        tokens_info: {
+          buying: "SOL",
+          selling: tokenAddress,
+          sellingAmount: amount,
+        },
+      };
 
-      if (userId && userEncryptionKey) {
-        if (!isValidSolanaAddress(address)) {
-          // const response = await searchTokensBySymbol(address);
-          // return {
-          //   ...response,
-          //   searchMessage: `Here are the search results for ${address}.`,
-          //   warningNote:
-          //     "⚠️ Please use the CA of the token for on-chain activities and detailed information about the token metadata.",
-          // };
-
-          return `could not find any tokens for ${address}. Please try using contract address of the token`;
-        }
-
-        const responce = await sellTokensApi(
-          userId,
-          userEncryptionKey,
-          address,
-          amount
-        );
-        sellTokensResponce = responce;
-        return sellTokensResponce;
-      }
-
-      sellTokensResponce = `Failed to sell tokens. Try again.`;
-      return sellTokensResponce;
+      return sellInstructions;
     },
   });
 

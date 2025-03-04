@@ -31,6 +31,8 @@ import { TokenBuy } from "./buy-tokens";
 import { TokenBuySkeleton } from "./buy-tokens-skeleton";
 import { TokenSearch } from "./search-tokens";
 import { TokenSearchSkeleton } from "./search-tokens-skeleton";
+import { TokenSell } from "./sell-tokens";
+import { TokenSellSkeleton } from "./sell-tokens-skeleton";
 
 const PurePreviewMessage = ({
   chatId,
@@ -129,9 +131,12 @@ const PurePreviewMessage = ({
                   ) : !message.toolInvocations ||
                     message.toolInvocations.length === 0 ||
                     !message.toolInvocations.some((tool) =>
-                      ["getWeather", "getTokenDetails", "buyTokens"].includes(
-                        tool.toolName
-                      )
+                      [
+                        "getWeather",
+                        "getTokenDetails",
+                        "buyTokens",
+                        "sellTokens",
+                      ].includes(tool.toolName)
                     ) ? (
                     <Markdown>{message.content as string}</Markdown>
                   ) : null}
@@ -191,6 +196,8 @@ const PurePreviewMessage = ({
                           />
                         ) : toolName === "buyTokens" ? (
                           <TokenBuy tokensInfo={result.tokens_info} />
+                        ) : toolName === "sellTokens" ? (
+                          <TokenSell tokensInfo={result.tokens_info} />
                         ) : toolName === "searchTokens" ? (
                           <TokenSearch
                             results={result.data}
@@ -228,6 +235,8 @@ const PurePreviewMessage = ({
                         <TokenDetailsSkeleton />
                       ) : toolName === "buyTokens" ? (
                         <TokenBuySkeleton />
+                      ) : toolName === "sellTokens" ? (
+                        <TokenSellSkeleton />
                       ) : toolName === "searchTokens" ? (
                         <TokenSearchSkeleton />
                       ) : null}

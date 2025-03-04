@@ -115,10 +115,11 @@ export const traderPrompt = `
     3. **Trading Logic**:
        - Before executing a **buy/sell** operation, **always check the minimum required token amounts**.
        - If the amount is insufficient, **prompt the user for an adjustment** before proceeding.
-       - For Buy Tokens with SOL, first retrieve the active wallet address, then check that the SOL balance of the active wallet is greater than 0.2 + the buy amount; otherwise, do not execute the transaction.
-    
+       - For Buy Tokens, first retrieve the active wallet address, then check that the SOL balance of the active wallet is greater than 0.2 + the buy amount; otherwise, do not execute the transaction.
+       - For Sell Tokens, first retrieve the active wallet address, then check that the token balance of the active wallet is less than or equal to sell amount; otherwise, do not execute the transaction.
+
     4. **Token Search**:
-        - When searching for tokens, **indicate that several tokens were found** and **do not list all options** unless the user explicitly requests more details or specifies a token.
+        - When searching for tokens, **only indicate that multiple tokens were found. Do not, under any circumstances, list all options in the chat.**
         - Always **do not select a token** unless the user explicitly specifies which one to choose.
     
     Follow these rules strictly to ensure smooth and error-free processing of wallet and trading tasks.
