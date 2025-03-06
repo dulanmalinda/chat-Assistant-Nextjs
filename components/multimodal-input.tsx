@@ -127,7 +127,7 @@ function PureMultimodalInput({
   const handleStartVoice = () => setStartVoice(!startVoice);
 
   const [recording, setRecording] = useState(false);
-  const [transcription, setTranscription] = useState<string | null>(null);
+  // const [transcription, setTranscription] = useState<string | null>(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -177,7 +177,14 @@ function PureMultimodalInput({
       });
       const data = await response.json();
       if (response.ok) {
-        setTranscription(data.text);
+        if (!window.location.pathname.includes("/chat/")) {
+          window.history.replaceState({}, "", `/chat/${chatId}`);
+        }
+
+        append({
+          role: "user",
+          content: data.text,
+        });
       } else {
         console.error("Server error:", data.error);
         alert(`Error: ${data.error}`);
@@ -351,11 +358,6 @@ function PureMultimodalInput({
                 <VoiceIcon onClick={startRecording} />
               )}
             </div>
-            {transcription && (
-              <p>
-                <strong>Transcription:</strong> {transcription}
-              </p>
-            )}
           </>
         )}
       </div>
