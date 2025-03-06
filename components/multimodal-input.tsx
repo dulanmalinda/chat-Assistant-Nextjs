@@ -30,6 +30,9 @@ import { Textarea } from "./ui/textarea";
 import { SuggestedActions } from "./suggested-actions";
 import equal from "fast-deep-equal";
 
+import { VoiceIcon } from "@/assets/svgs/VoiceIcon";
+import { VoiceCancelIcon } from "@/assets/svgs/VoiceCancelIcon";
+
 function PureMultimodalInput({
   chatId,
   input,
@@ -119,6 +122,76 @@ function PureMultimodalInput({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
+  //#region Audio transcribe related
+  const [startVoice, setStartVoice] = useState(false);
+  const handleStartVoice = () => setStartVoice(!startVoice);
+
+  const [recording, setRecording] = useState(false);
+  const [transcription, setTranscription] = useState<string | null>(null);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+
+  // Start recording audio
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      mediaRecorderRef.current.ondataavailable = (e) => {
+        chunksRef.current.push(e.data);
+      };
+      mediaRecorderRef.current.onstop = () => {
+        const audioBlob = new Blob(chunksRef.current, { type: "audio/wav" });
+        sendAudioToServer(audioBlob);
+        chunksRef.current = [];
+        // Stop the stream to release the microphone
+        stream.getTracks().forEach((track) => track.stop());
+      };
+      mediaRecorderRef.current.start();
+      setRecording(true);
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      alert(
+        "Failed to start recording. Please ensure microphone access is granted."
+      );
+    }
+  };
+
+  // Stop recording audio
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setRecording(false);
+    }
+  };
+
+  // Send audio to the server for transcription
+  const sendAudioToServer = async (audioBlob: Blob) => {
+    setIsTranscribing(true);
+    const formData = new FormData();
+    formData.append("audio", audioBlob, "recording.wav");
+    try {
+      const response = await fetch("/api/transcribe", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setTranscription(data.text);
+      } else {
+        console.error("Server error:", data.error);
+        alert(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error sending audio:", error);
+      alert("Failed to send audio to server.");
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
+
+  //#endregion
+
   const submitForm = useCallback(() => {
     window.history.replaceState({}, "", `/chat/${chatId}`);
 
@@ -203,16 +276,16 @@ function PureMultimodalInput({
           <SuggestedActions append={append} chatId={chatId} />
         )}
 
-      <input
+      {/* <input
         type="file"
         className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
         ref={fileInputRef}
         multiple
         onChange={handleFileChange}
         tabIndex={-1}
-      />
+      /> */}
 
-      {(attachments.length > 0 || uploadQueue.length > 0) && (
+      {/* {(attachments.length > 0 || uploadQueue.length > 0) && (
         <div className="flex flex-row gap-2 overflow-x-scroll items-end">
           {attachments.map((attachment) => (
             <PreviewAttachment key={attachment.url} attachment={attachment} />
@@ -230,11 +303,11 @@ function PureMultimodalInput({
             />
           ))}
         </div>
-      )}
+      )} */}
 
       <Textarea
         ref={textareaRef}
-        placeholder="Send a message..."
+        placeholder="What can I do for you?"
         value={input}
         onChange={handleInput}
         className={cx(
@@ -256,19 +329,34 @@ function PureMultimodalInput({
         }}
       />
 
-      <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
+      {/* <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
         <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} />
-      </div>
+      </div> */}
 
-      <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
+      <div className="absolute bottom-0 right-0 p-2 flex flex-row gap-2">
         {isLoading ? (
           <StopButton stop={stop} setMessages={setMessages} />
         ) : (
-          <SendButton
-            input={input}
-            submitForm={submitForm}
-            uploadQueue={uploadQueue}
-          />
+          <>
+            <SendButton
+              input={input}
+              submitForm={submitForm}
+              uploadQueue={uploadQueue}
+            />
+
+            <div className="cursor-pointer">
+              {recording ? (
+                <VoiceCancelIcon onClick={stopRecording} />
+              ) : (
+                <VoiceIcon onClick={startRecording} />
+              )}
+            </div>
+            {transcription && (
+              <p>
+                <strong>Transcription:</strong> {transcription}
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -11,12 +11,15 @@ import { isValidSolanaAddress } from "@/lib/utils";
 export const buyTokens = () =>
   tool({
     description:
-      "Buy Tokens with Sol. This does not submit the transactions to the network. Pops up the component so user can accept and submit the transaction",
+      "Buy Tokens with Sol. **If walletBalance is less than (0.2 + amount): do not execute**. This does not submit the transactions to the network. Pops up the component so user can accept and submit the transaction",
     parameters: z.object({
       tokenAddress: z.string(),
       amount: z.number(),
+      walletBalance: z.number(),
     }),
-    execute: async ({ tokenAddress, amount }) => {
+    execute: async ({ tokenAddress, amount, walletBalance }) => {
+      console.log(walletBalance);
+
       const buyInstructions = {
         tokens_info: {
           buying: tokenAddress,
