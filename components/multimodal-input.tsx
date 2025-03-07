@@ -32,6 +32,7 @@ import equal from "fast-deep-equal";
 
 import { VoiceIcon } from "@/assets/svgs/VoiceIcon";
 import { VoiceCancelIcon } from "@/assets/svgs/VoiceCancelIcon";
+import { VoiceLoadingIcon } from "@/assets/svgs/VoiceLoadingIcon ";
 
 function PureMultimodalInput({
   chatId,
@@ -354,6 +355,8 @@ function PureMultimodalInput({
             <div className="cursor-pointer">
               {recording ? (
                 <VoiceCancelIcon onClick={stopRecording} />
+              ) : isTranscribing ? (
+                <VoiceLoadingIcon />
               ) : (
                 <VoiceIcon onClick={startRecording} />
               )}
