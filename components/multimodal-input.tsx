@@ -30,9 +30,7 @@ import { Textarea } from "./ui/textarea";
 import { SuggestedActions } from "./suggested-actions";
 import equal from "fast-deep-equal";
 
-import { VoiceIcon } from "@/assets/svgs/VoiceIcon";
-import { VoiceCancelIcon } from "@/assets/svgs/VoiceCancelIcon";
-import { VoiceLoadingIcon } from "@/assets/svgs/VoiceLoadingIcon ";
+import VoiceChat from "./VoiceChat";
 
 function PureMultimodalInput({
   chatId,
@@ -123,80 +121,7 @@ function PureMultimodalInput({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
-  //#region Audio transcribe related
-  const [startVoice, setStartVoice] = useState(false);
-  const handleStartVoice = () => setStartVoice(!startVoice);
-
-  const [recording, setRecording] = useState(false);
-  // const [transcription, setTranscription] = useState<string | null>(null);
-  const [isTranscribing, setIsTranscribing] = useState(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-
-  // Start recording audio
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      mediaRecorderRef.current.ondataavailable = (e) => {
-        chunksRef.current.push(e.data);
-      };
-      mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(chunksRef.current, { type: "audio/wav" });
-        sendAudioToServer(audioBlob);
-        chunksRef.current = [];
-        // Stop the stream to release the microphone
-        stream.getTracks().forEach((track) => track.stop());
-      };
-      mediaRecorderRef.current.start();
-      setRecording(true);
-    } catch (error) {
-      console.error("Error starting recording:", error);
-      alert(
-        "Failed to start recording. Please ensure microphone access is granted."
-      );
-    }
-  };
-
-  // Stop recording audio
-  const stopRecording = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      setRecording(false);
-    }
-  };
-
-  // Send audio to the server for transcription
-  const sendAudioToServer = async (audioBlob: Blob) => {
-    setIsTranscribing(true);
-    const formData = new FormData();
-    formData.append("audio", audioBlob, "recording.wav");
-    try {
-      const response = await fetch("/api/transcribe", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-      if (response.ok) {
-        if (!window.location.pathname.includes("/chat/")) {
-          window.history.replaceState({}, "", `/chat/${chatId}`);
-        }
-
-        append({
-          role: "user",
-          content: data.text,
-        });
-      } else {
-        console.error("Server error:", data.error);
-        alert(`Error: ${data.error}`);
-      }
-    } catch (error) {
-      console.error("Error sending audio:", error);
-      alert("Failed to send audio to server.");
-    } finally {
-      setIsTranscribing(false);
-    }
-  };
+  //#region Voice Mode Related
 
   //#endregion
 
@@ -352,15 +277,17 @@ function PureMultimodalInput({
               uploadQueue={uploadQueue}
             />
 
-            <div className="cursor-pointer">
+            {/* <div className="cursor-pointer">
               {recording ? (
-                <VoiceCancelIcon onClick={stopRecording} />
-              ) : isTranscribing ? (
+                <VoiceCancelIcon onClick={handleStartVoice} />
+              ) : isConnecting ? (
                 <VoiceLoadingIcon />
               ) : (
-                <VoiceIcon onClick={startRecording} />
+                <VoiceIcon onClick={handleStartVoice} />
               )}
-            </div>
+            </div> */}
+
+            <VoiceChat />
           </>
         )}
       </div>
