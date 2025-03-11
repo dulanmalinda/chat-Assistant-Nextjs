@@ -21,6 +21,7 @@ export const getWallets = ({ session }: getWalletsProps) =>
       if (userId && userEncryptionKey) {
         const responce = await getWalletsApi(userId, userEncryptionKey);
         getAllWalletsResponce = responce;
+
         return getAllWalletsResponce;
       }
 

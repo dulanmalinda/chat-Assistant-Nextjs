@@ -15,6 +15,7 @@ import { Messages } from "./messages";
 // import { VisibilityType } from "./visibility-selector";
 import { useBlockSelector } from "@/hooks/use-block";
 import { toast } from "sonner";
+import VoiceChat from "./VoiceChat";
 
 export function Chat({
   id,

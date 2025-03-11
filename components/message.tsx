@@ -33,6 +33,10 @@ import { TokenSearch } from "./search-tokens";
 import { TokenSearchSkeleton } from "./search-tokens-skeleton";
 import { TokenSell } from "./sell-tokens";
 import { TokenSellSkeleton } from "./sell-tokens-skeleton";
+import {
+  getToolProcessing,
+  setToolProcessing,
+} from "@/lib/ai/voiceTools/voiceTools";
 
 const PurePreviewMessage = ({
   chatId,
@@ -162,6 +166,11 @@ const PurePreviewMessage = ({
               <div className="flex flex-col gap-4">
                 {message.toolInvocations.map((toolInvocation) => {
                   const { toolName, toolCallId, state, args } = toolInvocation;
+
+                  //Voice Tools related
+                  if (getToolProcessing()) {
+                    setToolProcessing(false);
+                  }
 
                   if (state === "result") {
                     const { result } = toolInvocation;

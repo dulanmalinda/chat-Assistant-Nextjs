@@ -121,10 +121,6 @@ function PureMultimodalInput({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
-  //#region Voice Mode Related
-
-  //#endregion
-
   const submitForm = useCallback(() => {
     window.history.replaceState({}, "", `/chat/${chatId}`);
 
@@ -286,10 +282,9 @@ function PureMultimodalInput({
                 <VoiceIcon onClick={handleStartVoice} />
               )}
             </div> */}
-
-            <VoiceChat />
           </>
         )}
+        <VoiceChat chatId={chatId} append={append} />
       </div>
     </div>
   );

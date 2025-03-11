@@ -1,10 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
+import { ChatRequestOptions, CreateMessage, Message } from "ai";
 import { VoiceIcon } from "@/assets/svgs/VoiceIcon";
 import { VoiceCancelIcon } from "@/assets/svgs/VoiceCancelIcon";
 import { VoiceLoadingIcon } from "@/assets/svgs/VoiceLoadingIcon";
 import VoiceFunctions from "./VoiceFunctions";
 
-const VoiceChat = () => {
+interface VoiceChatProps {
+  chatId: string;
+  append: (
+    message: Message | CreateMessage,
+    chatRequestOptions?: ChatRequestOptions
+  ) => Promise<string | null | undefined>;
+}
+
+const VoiceChat = ({ chatId, append }: VoiceChatProps) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [events, setEvents] = useState<any>([]);
@@ -141,7 +150,10 @@ const VoiceChat = () => {
           <VoiceFunctions
             events={events}
             sendClientEvent={sendClientEvent}
+            sendTextMessage={sendTextMessage}
             isSessionActive={isSessionActive}
+            chatId={chatId}
+            append={append}
           />
         </div>
       ) : isConnecting ? (

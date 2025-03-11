@@ -1,26 +1,54 @@
-import React, { useState, useEffect } from "react";
-import { sessionUpdate } from "@/lib/ai/voiceTools/voiceTools";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  sessionUpdate,
+  setToolProcessing,
+  getToolProcessing,
+} from "@/lib/ai/voiceTools/voiceTools";
+import { ChatRequestOptions, CreateMessage, Message } from "ai";
 
 type VoiceFunctionsProps = {
   events: any[];
   isSessionActive: boolean;
   sendClientEvent: (message: Record<string, any>) => void;
+  sendTextMessage: (message: string) => void;
+  chatId: string;
+  append: (
+    message: Message | CreateMessage,
+    chatRequestOptions?: ChatRequestOptions
+  ) => Promise<string | null | undefined>;
 };
 
 export default function VoiceFunctions({
   events,
   isSessionActive,
   sendClientEvent,
+  chatId,
+  append,
 }: VoiceFunctionsProps) {
-  const [functionAdded, setFunctionAdded] = useState<boolean>(false);
+  const [functionsAdded, setFunctionsAdded] = useState<boolean>(false);
+  const didRequestToolExecution = useRef<boolean | null>(null);
+
+  useEffect(() => {
+    if (!getToolProcessing() && didRequestToolExecution.current) {
+      sendClientEvent({
+        type: "response.create",
+        response: {
+          instructions:
+            "Need to say that you have fulfilled users request. **The respoonce should be adjusted per initial request. dont ask further questions regarding this request.**",
+        },
+      });
+
+      didRequestToolExecution.current = getToolProcessing();
+    }
+  }, [getToolProcessing()]);
 
   useEffect(() => {
     if (!events || events.length === 0) return;
 
     const firstEvent = events[events.length - 1];
-    if (!functionAdded && firstEvent.type === "session.created") {
+    if (!functionsAdded && firstEvent.type === "session.created") {
       sendClientEvent(sessionUpdate);
-      setFunctionAdded(true);
+      setFunctionsAdded(true);
     }
 
     const mostRecentEvent = events[0];
@@ -31,17 +59,45 @@ export default function VoiceFunctions({
       mostRecentEvent.response.output.forEach((output: any) => {
         if (
           output.type === "function_call" &&
-          output.name === "getWallets" &&
-          output.status == "completed"
+          output.status == "completed" &&
+          !getToolProcessing()
         ) {
-          console.log(output);
+          setToolProcessing(true);
+          didRequestToolExecution.current = true;
+
+          if (!window.location.pathname.includes("/chat/")) {
+            window.history.replaceState({}, "", `/chat/${chatId}`);
+          }
+
+          switch (output.name) {
+            case "getWallets":
+              append({
+                role: "user",
+                content: "Get details of all my wallets",
+              });
+
+              break;
+            case "getTokenDetails":
+              const { contract } = JSON.parse(output.arguments);
+
+              append({
+                role: "user",
+                content: `Get details of ${contract} token`,
+              });
+
+              break;
+            case "functionC":
+              break;
+            default:
+              break;
+          }
+
           setTimeout(() => {
             sendClientEvent({
               type: "response.create",
               response: {
-                instructions: `
-                    say that u have completed retrieving the wallets
-                  `,
+                instructions:
+                  "Need to say that you are working on users request",
               },
             });
           }, 500);
@@ -52,7 +108,7 @@ export default function VoiceFunctions({
 
   useEffect(() => {
     if (!isSessionActive) {
-      setFunctionAdded(false);
+      setFunctionsAdded(false);
     }
   }, [isSessionActive]);
 
