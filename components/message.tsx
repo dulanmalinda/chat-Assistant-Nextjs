@@ -3,7 +3,7 @@
 import type { ChatRequestOptions, Message } from "ai";
 import cx from "classnames";
 import { AnimatePresence, motion } from "framer-motion";
-import { memo, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 
 import type { Vote } from "@/lib/db/schema";
 
@@ -33,10 +33,8 @@ import { TokenSearch } from "./search-tokens";
 import { TokenSearchSkeleton } from "./search-tokens-skeleton";
 import { TokenSell } from "./sell-tokens";
 import { TokenSellSkeleton } from "./sell-tokens-skeleton";
-import {
-  getToolProcessing,
-  setToolProcessing,
-} from "@/lib/ai/voiceTools/voiceTools";
+
+import { useVoiceChat } from "./VoiceChatContext";
 
 const PurePreviewMessage = ({
   chatId,
@@ -60,6 +58,56 @@ const PurePreviewMessage = ({
   isReadonly: boolean;
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
+
+  const { sendClientEvent, toolProcessing, setToolProcessing } = useVoiceChat();
+
+  const sendTextMessageVoiceAPI = (message: string) => {
+    const results = {
+      type: "conversation.item.create",
+      item: {
+        type: "message",
+        role: "user",
+        content: [
+          {
+            type: "input_text",
+            text: message,
+          },
+        ],
+      },
+    };
+
+    sendClientEvent(results);
+
+    const responce = {
+      type: "response.create",
+      response: {
+        instructions: `Need to say that you have received necessary data. Should adjust as per users request. ** Do not repeat the results though **`,
+      },
+    };
+
+    sendClientEvent(responce);
+  };
+
+  useEffect(() => {
+    if (!message.toolInvocations || !toolProcessing) return;
+
+    const hasResult = message.toolInvocations.some(
+      (toolInvocation) => toolInvocation.state === "result"
+    );
+
+    if (hasResult) {
+      const toolResult = message.toolInvocations.find(
+        (toolInvocation) => toolInvocation.state === "result"
+      )?.result;
+
+      const delay = setTimeout(() => {
+        setToolProcessing(false);
+        sendTextMessageVoiceAPI(JSON.stringify(toolResult));
+      }, 2000);
+
+      return () => clearTimeout(delay);
+    }
+  }, [message.toolInvocations]);
 
   return (
     <AnimatePresence>
@@ -166,11 +214,6 @@ const PurePreviewMessage = ({
               <div className="flex flex-col gap-4">
                 {message.toolInvocations.map((toolInvocation) => {
                   const { toolName, toolCallId, state, args } = toolInvocation;
-
-                  //Voice Tools related
-                  if (getToolProcessing()) {
-                    setToolProcessing(false);
-                  }
 
                   if (state === "result") {
                     const { result } = toolInvocation;

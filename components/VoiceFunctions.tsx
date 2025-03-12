@@ -1,16 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  sessionUpdate,
-  setToolProcessing,
-  getToolProcessing,
-} from "@/lib/ai/voiceTools/voiceTools";
+import { sessionUpdate } from "@/lib/ai/voiceTools/voiceTools";
 import { ChatRequestOptions, CreateMessage, Message } from "ai";
+import { useVoiceChat } from "./VoiceChatContext";
 
 type VoiceFunctionsProps = {
   events: any[];
   isSessionActive: boolean;
   sendClientEvent: (message: Record<string, any>) => void;
-  sendTextMessage: (message: string) => void;
   chatId: string;
   append: (
     message: Message | CreateMessage,
@@ -28,19 +24,21 @@ export default function VoiceFunctions({
   const [functionsAdded, setFunctionsAdded] = useState<boolean>(false);
   const didRequestToolExecution = useRef<boolean | null>(null);
 
-  useEffect(() => {
-    if (!getToolProcessing() && didRequestToolExecution.current) {
-      sendClientEvent({
-        type: "response.create",
-        response: {
-          instructions:
-            "Need to say that you have fulfilled users request. **The respoonce should be adjusted per initial request. dont ask further questions regarding this request.**",
-        },
-      });
+  const { toolProcessing, setToolProcessing } = useVoiceChat();
 
-      didRequestToolExecution.current = getToolProcessing();
-    }
-  }, [getToolProcessing()]);
+  // useEffect(() => {
+  //   if (!toolProcessing && didRequestToolExecution.current) {
+  //     sendClientEvent({
+  //       type: "response.create",
+  //       response: {
+  //         instructions:
+  //           "Need to say that you have fulfilled users request. **The respoonce should be adjusted per initial request. dont ask further questions regarding this request.**",
+  //       },
+  //     });
+
+  //     didRequestToolExecution.current = toolProcessing;
+  //   }
+  // }, [toolProcessing]);
 
   useEffect(() => {
     if (!events || events.length === 0) return;
@@ -60,7 +58,7 @@ export default function VoiceFunctions({
         if (
           output.type === "function_call" &&
           output.status == "completed" &&
-          !getToolProcessing()
+          !toolProcessing
         ) {
           setToolProcessing(true);
           didRequestToolExecution.current = true;

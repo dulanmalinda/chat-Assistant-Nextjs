@@ -4,6 +4,7 @@ import { VoiceIcon } from "@/assets/svgs/VoiceIcon";
 import { VoiceCancelIcon } from "@/assets/svgs/VoiceCancelIcon";
 import { VoiceLoadingIcon } from "@/assets/svgs/VoiceLoadingIcon";
 import VoiceFunctions from "./VoiceFunctions";
+import { useVoiceChat } from "./VoiceChatContext";
 
 interface VoiceChatProps {
   chatId: string;
@@ -17,9 +18,11 @@ const VoiceChat = ({ chatId, append }: VoiceChatProps) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [events, setEvents] = useState<any>([]);
-  const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
+  // const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
   const peerConnection = useRef<RTCPeerConnection | null>(null);
   const audioElement = useRef<HTMLAudioElement | null>(null);
+
+  const { sendClientEvent, dataChannel, setDataChannel } = useVoiceChat();
 
   const startSession = async () => {
     try {
@@ -93,41 +96,6 @@ const VoiceChat = ({ chatId, append }: VoiceChatProps) => {
     peerConnection.current = null;
   };
 
-  const sendClientEvent = (message: Record<string, any>) => {
-    if (dataChannel) {
-      const eventMessage = {
-        ...message,
-        event_id: message.event_id || crypto.randomUUID(),
-      };
-      dataChannel.send(JSON.stringify(eventMessage));
-      setEvents((prev: any) => [eventMessage, ...prev]);
-    } else {
-      console.error(
-        "Failed to send message - no data channel available",
-        message
-      );
-    }
-  };
-
-  const sendTextMessage = (message: string) => {
-    const event = {
-      type: "conversation.item.create",
-      item: {
-        type: "message",
-        role: "user",
-        content: [
-          {
-            type: "input_text",
-            text: message,
-          },
-        ],
-      },
-    };
-
-    sendClientEvent(event);
-    sendClientEvent({ type: "response.create" });
-  };
-
   useEffect(() => {
     if (dataChannel) {
       dataChannel.addEventListener("message", (e) => {
@@ -150,7 +118,6 @@ const VoiceChat = ({ chatId, append }: VoiceChatProps) => {
           <VoiceFunctions
             events={events}
             sendClientEvent={sendClientEvent}
-            sendTextMessage={sendTextMessage}
             isSessionActive={isSessionActive}
             chatId={chatId}
             append={append}

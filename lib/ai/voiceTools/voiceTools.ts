@@ -5,7 +5,8 @@ export const sessionUpdate = {
       {
         type: "function",
         name: "getWallets",
-        description: "Get details of all user wallets.",
+        description:
+          "Get details of all user wallets. ** You cannot execute tools sequentially or parallely. only one task at a time **",
         parameters: {
           type: "object",
           strict: true,
@@ -17,7 +18,7 @@ export const sessionUpdate = {
         type: "function",
         name: "getTokenDetails",
         description:
-          "Get details of a token. there must be a token contract address. If not searchTokens, then ask user to specify which token to get details of.",
+          "Get details of a token. there must be a token contract address. ** You cannot execute tools sequentially or parallely. only one task at a time **",
         parameters: {
           type: "object",
           strict: true,
@@ -30,7 +31,8 @@ export const sessionUpdate = {
       {
         type: "function",
         name: "searchTokens",
-        description: "Search for tokens by symbol, name, or ticker.",
+        description:
+          "Search for tokens by symbol, name, or ticker. ** You cannot execute tools sequentially or parallely. only one task at a time **",
         parameters: {
           type: "object",
           strict: true,
@@ -44,11 +46,3 @@ export const sessionUpdate = {
     tool_choice: "auto",
   },
 };
-
-let processing = false;
-
-export const setToolProcessing = (value: boolean) => {
-  processing = value;
-};
-
-export const getToolProcessing = () => processing;
