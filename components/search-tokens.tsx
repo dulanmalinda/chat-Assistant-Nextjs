@@ -12,21 +12,21 @@ interface TokenSearchResult {
   quoteToken: string;
   hasSocials: boolean;
   poolAddress: string;
-  liquidityUsd: number;
-  marketCapUsd: number;
-  priceUsd: number;
-  lpBurn: number;
+  liquidityUsd: number | undefined;
+  marketCapUsd: number | undefined;
+  priceUsd: number | undefined;
+  lpBurn: number | undefined;
   market: string;
   freezeAuthority: string | null;
   mintAuthority: string | null;
   deployer: string;
-  createdAt: number;
+  createdAt: number | undefined;
   status: string;
   lastUpdated: number;
-  holders: number;
-  buys: number;
-  sells: number;
-  totalTransactions: number;
+  holders: number | undefined;
+  buys: number | undefined;
+  sells: number | undefined;
+  totalTransactions: number | undefined;
 }
 
 interface TokenSearchResultsProps {
@@ -56,7 +56,7 @@ export function TokenSearch({ results, total }: TokenSearchResultsProps) {
     <div className="flex flex-col gap-6 text-white">
       <div className="text-lg font-semibold">Search Results</div>
 
-      {results.length === 0 ? (
+      {results === undefined ? (
         <div className="text-gray-400 text-center py-8">
           No tokens found matching your criteria
         </div>
@@ -64,7 +64,7 @@ export function TokenSearch({ results, total }: TokenSearchResultsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {results.map((token, index) => (
             <div
-              key={token.id}
+              key={index}
               className="bg-gray-900 rounded-xl p-4 flex flex-col gap-3 border border-gray-800 hover:border-gray-700 transition-colors relative"
             >
               <div className="flex items-start gap-3">
@@ -89,41 +89,50 @@ export function TokenSearch({ results, total }: TokenSearchResultsProps) {
                 <div>
                   Price:{" "}
                   <span className="text-green-400">
-                    ${token.priceUsd.toFixed(6)}
+                    {token.priceUsd !== undefined
+                      ? `$${token.priceUsd.toFixed(6)}`
+                      : "N/A"}
                   </span>
                 </div>
                 <div>
                   Market Cap:{" "}
                   <span className="text-green-400">
-                    ${(token.marketCapUsd / 1e6).toFixed(2)}M
+                    {token.marketCapUsd !== undefined
+                      ? `$${(token.marketCapUsd / 1e6).toFixed(2)}M`
+                      : "N/A"}
                   </span>
                 </div>
                 <div>
                   Liquidity:{" "}
                   <span className="text-green-400">
-                    ${(token.liquidityUsd / 1e6).toFixed(2)}M
+                    {token.liquidityUsd !== undefined
+                      ? `$${(token.liquidityUsd / 1e6).toFixed(2)}M`
+                      : "N/A"}
                   </span>
                 </div>
                 <div>
-                  Holders: <span>{token.holders}</span>
+                  Holders: <span>{token.holders ?? "N/A"}</span>
                 </div>
                 <div>
                   Age: <span>{getTokenAge(token.createdAt)}</span>
                 </div>
                 <div>
-                  LP Burn: <span>{token.lpBurn}%</span>
+                  LP Burn:{" "}
+                  <span>
+                    {token.lpBurn !== undefined ? `${token.lpBurn}%` : "N/A"}
+                  </span>
                 </div>
               </div>
 
               <div className="flex gap-4 text-xs text-gray-300 flex-wrap">
                 <span className="break-all overflow-wrap-break-word">
-                  Buys: {token.buys}
+                  Buys: {token.buys ?? "N/A"}
                 </span>
                 <span className="break-all overflow-wrap-break-word">
-                  Sells: {token.sells}
+                  Sells: {token.sells ?? "N/A"}
                 </span>
                 <span className="break-all overflow-wrap-break-word">
-                  Txns: {token.totalTransactions}
+                  Txns: {token.totalTransactions ?? "N/A"}
                 </span>
               </div>
 

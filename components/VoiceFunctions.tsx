@@ -78,15 +78,21 @@ export default function VoiceFunctions({
 
               break;
             case "getTokenDetails":
-              const { contract } = JSON.parse(output.arguments);
+              const { address } = JSON.parse(output.arguments);
 
               append({
                 role: "user",
-                content: `Get details of ${contract} token`,
+                content: `Get details of ${address} token`,
               });
 
               break;
-            case "functionC":
+            case "searchTokens":
+              const { search_param } = JSON.parse(output.arguments);
+
+              append({
+                role: "user",
+                content: `Search for ${search_param} token`,
+              });
               break;
             default:
               break;

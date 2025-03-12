@@ -17,7 +17,7 @@ export const sessionUpdate = {
         type: "function",
         name: "getTokenDetails",
         description:
-          "Get details of a token. Must check whether the provided CA is valid before proceeding. If a CA is not provided, search for the token.",
+          "Get details of a token. there must be a token contract address. If not searchTokens, then ask user to specify which token to get details of.",
         parameters: {
           type: "object",
           strict: true,
@@ -25,6 +25,19 @@ export const sessionUpdate = {
             address: { type: "string" },
           },
           required: ["address"],
+        },
+      },
+      {
+        type: "function",
+        name: "searchTokens",
+        description: "Search for tokens by symbol, name, or ticker.",
+        parameters: {
+          type: "object",
+          strict: true,
+          properties: {
+            search_param: { type: "string" },
+          },
+          required: ["search_param"],
         },
       },
     ],
