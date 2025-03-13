@@ -61,7 +61,7 @@ export const sessionUpdate = {
       {
         type: "function",
         name: "buyTokens",
-        description: `Buy Tokens with SOL.  ${commonDescription}`,
+        description: `Buy Tokens with SOL. You only initiate a token buy action, user needs to approve that.  ${commonDescription}`,
         parameters: {
           type: "object",
           strict: true,
