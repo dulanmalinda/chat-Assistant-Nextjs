@@ -92,6 +92,38 @@ export default function VoiceFunctions({
                 content: `Search for ${search_param} token`,
               });
               break;
+            case "checkWalletBalances":
+              const { walletAddresses } = JSON.parse(output.arguments);
+
+              append({
+                role: "user",
+                content: `Check balances of ${walletAddresses} wallets`,
+              });
+              break;
+            case "buyTokens":
+              const { tokenAddress, amount } = JSON.parse(output.arguments);
+
+              append({
+                role: "user",
+                content: `Buy ${tokenAddress} worth of ${amount} sol`,
+              });
+              break;
+            case "getActiveWallet":
+              // const { search_param } = JSON.parse(output.arguments);
+
+              append({
+                role: "user",
+                content: `Get active wallet details`,
+              });
+              break;
+            case "setActiveWallet":
+              const { wallet_name } = JSON.parse(output.arguments);
+
+              append({
+                role: "user",
+                content: `Set ${wallet_name} as the active wallet.`,
+              });
+              break;
             default:
               break;
           }
