@@ -62,30 +62,34 @@ const PurePreviewMessage = ({
   const { sendClientEvent, toolProcessing, setToolProcessing } = useVoiceChat();
 
   const sendTextMessageVoiceAPI = (message: string) => {
-    const results = {
-      type: "conversation.item.create",
-      item: {
-        type: "message",
-        role: "user",
-        content: [
-          {
-            type: "input_text",
-            text: message,
-          },
-        ],
-      },
-    };
+    // const results = {
+    //   type: "conversation.item.create",
+    //   item: {
+    //     type: "message",
+    //     role: "user",
+    //     content: [
+    //       {
+    //         type: "input_text",
+    //         text: message,
+    //       },
+    //     ],
+    //   },
+    // };
 
-    sendClientEvent(results);
+    // sendClientEvent(results);
 
-    const responce = {
+    const response = {
       type: "response.create",
       response: {
-        instructions: `Need to say that you have received necessary data. Should adjust as per users request. ** Do not repeat the results though **`,
+        instructions: JSON.stringify({
+          data: message,
+          instruction:
+            "Inform user that you have completed the request. **Never repeat data**",
+        }),
       },
     };
 
-    sendClientEvent(responce);
+    sendClientEvent(response);
   };
 
   useEffect(() => {
@@ -101,11 +105,13 @@ const PurePreviewMessage = ({
       )?.result;
 
       const delay = setTimeout(() => {
-        setToolProcessing(false);
         sendTextMessageVoiceAPI(JSON.stringify(toolResult));
-      }, 2000);
+        setToolProcessing(false);
+      }, 1000);
 
-      return () => clearTimeout(delay);
+      return () => {
+        clearTimeout(delay);
+      };
     }
   }, [message.toolInvocations]);
 

@@ -1,12 +1,13 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useEffect,
-} from "react";
+import { createContext, useContext, useState, ReactNode } from "react";
+
+interface VoiceMessage {
+  id: string;
+  content: string;
+  createdAt: Date;
+  role: "user" | "assistant";
+}
 
 interface VoiceChatContextValue {
   dataChannel: RTCDataChannel | null;
@@ -14,6 +15,10 @@ interface VoiceChatContextValue {
   sendClientEvent: (message: Record<string, any>) => void;
   toolProcessing: boolean;
   setToolProcessing: (value: boolean) => void;
+  voiceMessages: VoiceMessage[];
+  addVoiceMessage: (message: Omit<VoiceMessage, "createdAt">) => void;
+  isOnVoiceMode: boolean;
+  setIsOnVoiceMode: (value: boolean) => void;
 }
 
 const VoiceChatContext = createContext<VoiceChatContextValue | undefined>(
@@ -31,6 +36,8 @@ export const useVoiceChat = () => {
 export const VoiceChatProvider = ({ children }: { children: ReactNode }) => {
   const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
   const [toolProcessing, setToolProcessing] = useState(false);
+  const [voiceMessages, setVoiceMessages] = useState<VoiceMessage[]>([]);
+  const [isOnVoiceMode, setIsOnVoiceMode] = useState(false); // New state variable
 
   const sendClientEvent = (message: Record<string, any>) => {
     if (dataChannel) {
@@ -47,17 +54,24 @@ export const VoiceChatProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const addVoiceMessage = (message: Omit<VoiceMessage, "createdAt">) => {
+    setVoiceMessages((prev) => [
+      ...prev,
+      { ...message, createdAt: new Date() },
+    ]);
+  };
+
   const value: VoiceChatContextValue = {
     dataChannel,
     setDataChannel,
     sendClientEvent,
     toolProcessing,
     setToolProcessing,
+    voiceMessages,
+    addVoiceMessage,
+    isOnVoiceMode,
+    setIsOnVoiceMode,
   };
-
-  useEffect(() => {
-    console.log(toolProcessing);
-  }, [toolProcessing]);
 
   return (
     <VoiceChatContext.Provider value={value}>

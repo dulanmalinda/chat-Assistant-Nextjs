@@ -40,6 +40,35 @@ export default function VoiceFunctions({
   //   }
   // }, [toolProcessing]);
 
+  const onToolExecution = (message: string) => {
+    const results = {
+      type: "conversation.item.create",
+      item: {
+        type: "message",
+        role: "user",
+        content: [
+          {
+            type: "input_text",
+            text: message,
+          },
+        ],
+      },
+    };
+
+    sendClientEvent(results);
+
+    setTimeout(() => {
+      const response = {
+        type: "response.create",
+        response: {
+          instructions: `You are working on users request. **Always ask user to wait until you receive data from this action**. Also let user know weather this step is an intermediary one.`,
+        },
+      };
+
+      sendClientEvent(response);
+    }, 1000);
+  };
+
   useEffect(() => {
     if (!events || events.length === 0) return;
 
@@ -69,14 +98,18 @@ export default function VoiceFunctions({
 
           switch (output.name) {
             case "getWallets":
+              onToolExecution(`Getting details of your wallets.`);
+
               append({
                 role: "user",
-                content: "Get details of all my wallets",
+                content: "Get details of wallets.",
               });
 
               break;
             case "getTokenDetails":
               const { address } = JSON.parse(output.arguments);
+
+              onToolExecution(`Getting details of ${address}`);
 
               append({
                 role: "user",
@@ -87,18 +120,25 @@ export default function VoiceFunctions({
             case "searchTokens":
               const { search_param } = JSON.parse(output.arguments);
 
-              append({
-                role: "user",
-                content: `Search for ${search_param} token`,
-              });
-              break;
-            case "checkWalletBalances":
-              const { walletAddresses } = JSON.parse(output.arguments);
+              onToolExecution(`Searching for token ${search_param}`);
 
               append({
                 role: "user",
-                content: `Check balances of ${walletAddresses} wallets`,
+                content: `Search for token: ${search_param}`,
               });
+              break;
+            case "checkWalletBalances":
+              const { walletNames } = JSON.parse(output.arguments);
+
+              onToolExecution(`Checking balances of wallet/wallets`);
+
+              append({
+                role: "user",
+                content: `Check balances of ${
+                  walletNames ?? "active wallet"
+                } wallets`,
+              });
+
               break;
             case "buyTokens":
               const { tokenAddress, amount } = JSON.parse(output.arguments);
@@ -110,6 +150,7 @@ export default function VoiceFunctions({
               break;
             case "getActiveWallet":
               // const { search_param } = JSON.parse(output.arguments);
+              onToolExecution(`Getting details of the active wallet`);
 
               append({
                 role: "user",

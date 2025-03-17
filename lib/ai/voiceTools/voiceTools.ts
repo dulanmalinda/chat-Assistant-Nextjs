@@ -1,5 +1,5 @@
 const commonDescription =
-  "** You cannot execute tools sequentially or parallely. only one task at a time **";
+  "** You cannot execute tools parallely. Only one task at a time **";
 
 export const sessionUpdate = {
   type: "session.update",
@@ -45,23 +45,23 @@ export const sessionUpdate = {
       {
         type: "function",
         name: "checkWalletBalances",
-        description: `Get token balances of wallet/wallets. First, you must get the address/addresses of the mentioned wallet/wallets. If no wallets are mentioned, get the address of the active wallet. ${commonDescription}`,
+        description: `Retrieve token balances for the wallets mentioned. If no wallets are specified, use active wallet ${commonDescription}`,
         parameters: {
           type: "object",
           strict: true,
           properties: {
-            walletAddresses: {
+            walletNames: {
               type: "array",
               items: { type: "string" },
             },
           },
-          required: ["walletAddresses"],
+          required: ["walletNames"],
         },
       },
       {
         type: "function",
         name: "buyTokens",
-        description: `Buy Tokens with SOL. You only initiate a token buy action, user needs to approve that.  ${commonDescription}`,
+        description: `Buy tokens for Sol. Always ask user for the amount.   ${commonDescription}`,
         parameters: {
           type: "object",
           strict: true,

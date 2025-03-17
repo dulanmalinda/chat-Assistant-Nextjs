@@ -16,13 +16,18 @@ interface VoiceChatProps {
 
 const VoiceChat = ({ chatId, append }: VoiceChatProps) => {
   const [isConnecting, setIsConnecting] = useState(false);
-  const [isSessionActive, setIsSessionActive] = useState(false);
   const [events, setEvents] = useState<any>([]);
   // const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
   const peerConnection = useRef<RTCPeerConnection | null>(null);
   const audioElement = useRef<HTMLAudioElement | null>(null);
 
-  const { sendClientEvent, dataChannel, setDataChannel } = useVoiceChat();
+  const {
+    sendClientEvent,
+    dataChannel,
+    setDataChannel,
+    isOnVoiceMode,
+    setIsOnVoiceMode,
+  } = useVoiceChat();
 
   const startSession = async () => {
     try {
@@ -91,7 +96,7 @@ const VoiceChat = ({ chatId, append }: VoiceChatProps) => {
 
     peerConnection.current?.close();
 
-    setIsSessionActive(false);
+    setIsOnVoiceMode(false);
     setDataChannel(null);
     peerConnection.current = null;
   };
@@ -103,22 +108,35 @@ const VoiceChat = ({ chatId, append }: VoiceChatProps) => {
       });
 
       dataChannel.addEventListener("open", () => {
-        setIsSessionActive(true);
+        setIsOnVoiceMode(true);
         setIsConnecting(false);
         setEvents([]);
       });
     }
   }, [dataChannel]);
 
+  useEffect(() => {
+    if (isOnVoiceMode) {
+      const greetings = {
+        type: "response.create",
+        response: {
+          instructions: `Your name is "Armor". Greet the user.`,
+        },
+      };
+
+      sendClientEvent(greetings);
+    }
+  }, [isOnVoiceMode]);
+
   return (
     <div className="cursor-pointer">
-      {isSessionActive ? (
+      {isOnVoiceMode ? (
         <div>
           <VoiceCancelIcon onClick={stopSession} />
           <VoiceFunctions
             events={events}
             sendClientEvent={sendClientEvent}
-            isSessionActive={isSessionActive}
+            isSessionActive={isOnVoiceMode}
             chatId={chatId}
             append={append}
           />
