@@ -24,7 +24,7 @@ export default function VoiceFunctions({
   const [functionsAdded, setFunctionsAdded] = useState<boolean>(false);
   const didRequestToolExecution = useRef<boolean | null>(null);
 
-  const { toolProcessing, setToolProcessing } = useVoiceChat();
+  const { toolProcessing, setToolProcessing, addVoiceMessage } = useVoiceChat();
 
   // useEffect(() => {
   //   if (!toolProcessing && didRequestToolExecution.current) {
@@ -98,12 +98,21 @@ export default function VoiceFunctions({
 
           switch (output.name) {
             case "getWallets":
-              onToolExecution(`Getting details of your wallets.`);
+              // onToolExecution(`Getting details of your wallets.`);
 
-              append({
-                role: "user",
-                content: "Get details of wallets.",
-              });
+              // append({
+              //   role: "user",
+              //   content: "Get details of wallets.",
+              // });
+
+              //Get an idea about how to update voice messages array
+              const newMessage = {
+                id: crypto.randomUUID(),
+                content: "sssd",
+                role: "assistant" as const,
+              };
+
+              addVoiceMessage(newMessage);
 
               break;
             case "getTokenDetails":

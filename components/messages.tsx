@@ -40,15 +40,6 @@ function PureMessages({
 
   console.log(displayedMessages);
 
-  //Get an idea about how to update voice messages array
-  // const newMessage = {
-  //   id: crypto.randomUUID(),
-  //   content: input,
-  //   role: "user" as const,
-  // };
-
-  // addVoiceMessage(newMessage);
-
   return (
     <div
       ref={messagesContainerRef}
