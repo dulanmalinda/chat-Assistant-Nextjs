@@ -36,9 +36,8 @@ function PureMessages({
 
   const { voiceMessages, isOnVoiceMode } = useVoiceChat();
 
-  const displayedMessages = isOnVoiceMode ? voiceMessages : messages;
-
-  console.log(displayedMessages);
+  // const displayedMessages = isOnVoiceMode ? voiceMessages : messages;
+  const displayedMessages = messages;
 
   return (
     <div

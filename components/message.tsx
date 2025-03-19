@@ -62,35 +62,54 @@ const PurePreviewMessage = ({
   const { sendClientEvent, toolProcessing, setToolProcessing } = useVoiceChat();
 
   const sendTextMessageVoiceAPI = (message: string) => {
-    // const results = {
-    //   type: "conversation.item.create",
-    //   item: {
-    //     type: "message",
-    //     role: "user",
-    //     content: [
-    //       {
-    //         type: "input_text",
-    //         text: message,
-    //       },
-    //     ],
-    //   },
-    // };
+    const results = {
+      type: "conversation.item.create",
+      item: {
+        type: "message",
+        role: "user",
+        content: [
+          {
+            type: "input_text",
+            text: message,
+          },
+        ],
+      },
+    };
 
-    // sendClientEvent(results);
+    sendClientEvent(results);
 
     const response = {
       type: "response.create",
       response: {
-        instructions: JSON.stringify({
-          data: message,
-          instruction:
-            "Inform user that you have completed the request. **Never repeat data**",
-        }),
+        instructions: `Do not repeat the message. But user needs to know what task you completed.`,
       },
     };
 
     sendClientEvent(response);
   };
+
+  // useEffect(() => {
+  //   if (!message.toolInvocations || !toolProcessing) return;
+
+  //   const hasResult = message.toolInvocations.some(
+  //     (toolInvocation) => toolInvocation.state === "result"
+  //   );
+
+  //   if (hasResult) {
+  //     const toolResult = message.toolInvocations.find(
+  //       (toolInvocation) => toolInvocation.state === "result"
+  //     )?.result;
+
+  //     const delay = setTimeout(() => {
+  //       sendTextMessageVoiceAPI(message.content);
+  //       setToolProcessing(false);
+  //     }, 1000);
+
+  //     return () => {
+  //       clearTimeout(delay);
+  //     };
+  //   }
+  // }, [message.toolInvocations]);
 
   useEffect(() => {
     if (!message.toolInvocations || !toolProcessing) return;
@@ -100,20 +119,14 @@ const PurePreviewMessage = ({
     );
 
     if (hasResult) {
-      const toolResult = message.toolInvocations.find(
-        (toolInvocation) => toolInvocation.state === "result"
-      )?.result;
-
-      const delay = setTimeout(() => {
-        sendTextMessageVoiceAPI(JSON.stringify(toolResult));
+      const timer = setTimeout(() => {
+        sendTextMessageVoiceAPI(message.content);
         setToolProcessing(false);
       }, 1000);
 
-      return () => {
-        clearTimeout(delay);
-      };
+      return () => clearTimeout(timer);
     }
-  }, [message.toolInvocations]);
+  }, [message.content]);
 
   return (
     <AnimatePresence>

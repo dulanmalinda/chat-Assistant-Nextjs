@@ -54,19 +54,17 @@ export default function VoiceFunctions({
         ],
       },
     };
-
     sendClientEvent(results);
 
     setTimeout(() => {
       const response = {
         type: "response.create",
         response: {
-          instructions: `You are working on users request. **Always ask user to wait until you receive data from this action**. Also let user know weather this step is an intermediary one.`,
+          instructions: `This is to let user know that you are working on.`,
         },
       };
-
       sendClientEvent(response);
-    }, 1000);
+    }, 100);
   };
 
   useEffect(() => {
@@ -98,21 +96,48 @@ export default function VoiceFunctions({
 
           switch (output.name) {
             case "getWallets":
-              // onToolExecution(`Getting details of your wallets.`);
+              // const executeTool = async () => {
+              //   try {
+              //     const response = await fetch("/api/voice/tools/getWallets", {
+              //       method: "GET",
+              //       headers: { "Content-Type": "application/json" },
+              //     });
+              //     if (!response.ok)
+              //       throw new Error(`HTTP error! Status: ${response.status}`);
+              //     const data = await response.json();
 
-              // append({
-              //   role: "user",
-              //   content: "Get details of wallets.",
-              // });
+              //     console.log(data);
 
-              //Get an idea about how to update voice messages array
-              const newMessage = {
-                id: crypto.randomUUID(),
-                content: "sssd",
-                role: "assistant" as const,
-              };
+              //     const newMessage = {
+              //       id: crypto.randomUUID(),
+              //       content: "getWallets",
+              //       role: "assistant" as const,
+              //       toolInvocations: [
+              //         {
+              //           args: {},
+              //           state: "call" as const,
+              //           step: 0,
+              //           toolCallId: crypto.randomUUID(),
+              //           toolName: "getWallets",
+              //         },
+              //       ],
+              //     };
 
-              addVoiceMessage(newMessage);
+              //     onToolExecition(data);
+              //     // addVoiceMessage(data);
+              //   } catch (error) {
+              //     console.error("Error calling execute-tool API:", error);
+              //   }
+              // };
+
+              // executeTool();
+
+              onToolExecution(`Getting wallet details`);
+
+              append({
+                role: "user",
+                content: `Get details of all wallets`,
+              });
 
               break;
             case "getTokenDetails":
@@ -177,16 +202,6 @@ export default function VoiceFunctions({
             default:
               break;
           }
-
-          setTimeout(() => {
-            sendClientEvent({
-              type: "response.create",
-              response: {
-                instructions:
-                  "Need to say that you are working on users request",
-              },
-            });
-          }, 500);
         }
       });
     }
