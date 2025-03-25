@@ -6,6 +6,9 @@ import { VoiceLoadingIcon } from "@/assets/svgs/VoiceLoadingIcon";
 import VoiceFunctions from "./VoiceFunctions";
 import { useVoiceChat } from "./VoiceChatContext";
 
+import { traderVoicePrompt } from "@/lib/ai/prompts";
+import { sessionUpdate } from "@/lib/ai/voiceTools/voiceTools";
+
 interface VoiceChatProps {
   chatId: string;
   append: (
@@ -63,7 +66,7 @@ const VoiceChat = ({ chatId, append }: VoiceChatProps) => {
       await pc.setLocalDescription(offer);
 
       const baseUrl = "https://api.openai.com/v1/realtime";
-      const model = "gpt-4o-realtime-preview-2024-12-17";
+      const model = "gpt-4o-mini-realtime-preview-2024-12-17";
       const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
         method: "POST",
         body: offer.sdp,
@@ -104,6 +107,7 @@ const VoiceChat = ({ chatId, append }: VoiceChatProps) => {
   useEffect(() => {
     if (dataChannel) {
       dataChannel.addEventListener("message", (e) => {
+        console.log(JSON.parse(e.data));
         setEvents((prev: any) => [JSON.parse(e.data), ...prev]);
       });
 
@@ -117,14 +121,8 @@ const VoiceChat = ({ chatId, append }: VoiceChatProps) => {
 
   useEffect(() => {
     if (isOnVoiceMode) {
-      const greetings = {
-        type: "response.create",
-        response: {
-          instructions: `Your name is "Armor". Greet the user.`,
-        },
-      };
-
-      sendClientEvent(greetings);
+      sendClientEvent(sessionUpdate);
+      sendClientEvent({ type: "response.create" });
     }
   }, [isOnVoiceMode]);
 

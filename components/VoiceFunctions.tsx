@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { sessionUpdate } from "@/lib/ai/voiceTools/voiceTools";
+
 import { ChatRequestOptions, CreateMessage, Message } from "ai";
 import { useVoiceChat } from "./VoiceChatContext";
 
@@ -21,10 +21,14 @@ export default function VoiceFunctions({
   chatId,
   append,
 }: VoiceFunctionsProps) {
-  const [functionsAdded, setFunctionsAdded] = useState<boolean>(false);
   const didRequestToolExecution = useRef<boolean | null>(null);
 
-  const { toolProcessing, setToolProcessing, addVoiceMessage } = useVoiceChat();
+  const {
+    voiceToolProcessing,
+    setVoiceToolProcessing,
+    addVoiceMessage,
+    setToolCallId,
+  } = useVoiceChat();
 
   // useEffect(() => {
   //   if (!toolProcessing && didRequestToolExecution.current) {
@@ -40,41 +44,21 @@ export default function VoiceFunctions({
   //   }
   // }, [toolProcessing]);
 
-  const onToolExecution = (message: string) => {
+  const onToolExecution = (message: string, call_id: string) => {
     const results = {
       type: "conversation.item.create",
       item: {
-        type: "message",
-        role: "user",
-        content: [
-          {
-            type: "input_text",
-            text: message,
-          },
-        ],
+        type: "function_call_output",
+        call_id: call_id,
+        output: message,
       },
     };
-    sendClientEvent(results);
 
-    setTimeout(() => {
-      const response = {
-        type: "response.create",
-        response: {
-          instructions: `This is to let user know that you are working on.`,
-        },
-      };
-      sendClientEvent(response);
-    }, 100);
+    sendClientEvent(results);
   };
 
   useEffect(() => {
     if (!events || events.length === 0) return;
-
-    const firstEvent = events[events.length - 1];
-    if (!functionsAdded && firstEvent.type === "session.created") {
-      sendClientEvent(sessionUpdate);
-      setFunctionsAdded(true);
-    }
 
     const mostRecentEvent = events[0];
     if (
@@ -85,9 +69,9 @@ export default function VoiceFunctions({
         if (
           output.type === "function_call" &&
           output.status == "completed" &&
-          !toolProcessing
+          !voiceToolProcessing
         ) {
-          setToolProcessing(true);
+          setVoiceToolProcessing(true);
           didRequestToolExecution.current = true;
 
           if (!window.location.pathname.includes("/chat/")) {
@@ -109,7 +93,7 @@ export default function VoiceFunctions({
               //     console.log(data);
 
               //     const newMessage = {
-              //       id: crypto.randomUUID(),
+              //       id: mostRecentEvent.response.id,
               //       content: "getWallets",
               //       role: "assistant" as const,
               //       toolInvocations: [
@@ -117,14 +101,14 @@ export default function VoiceFunctions({
               //           args: {},
               //           state: "call" as const,
               //           step: 0,
-              //           toolCallId: crypto.randomUUID(),
+              //           toolCallId: output.call_id,
               //           toolName: "getWallets",
               //         },
               //       ],
               //     };
 
-              //     onToolExecition(data);
-              //     // addVoiceMessage(data);
+              //     onToolExecution(JSON.stringify(data), output.call_id);
+              //     addVoiceMessage(newMessage);
               //   } catch (error) {
               //     console.error("Error calling execute-tool API:", error);
               //   }
@@ -132,7 +116,9 @@ export default function VoiceFunctions({
 
               // executeTool();
 
-              onToolExecution(`Getting wallet details`);
+              // onToolExecution(`Getting wallet details`);
+
+              setToolCallId(output.call_id);
 
               append({
                 role: "user",
@@ -143,7 +129,7 @@ export default function VoiceFunctions({
             case "getTokenDetails":
               const { address } = JSON.parse(output.arguments);
 
-              onToolExecution(`Getting details of ${address}`);
+              setToolCallId(output.call_id);
 
               append({
                 role: "user",
@@ -154,7 +140,7 @@ export default function VoiceFunctions({
             case "searchTokens":
               const { search_param } = JSON.parse(output.arguments);
 
-              onToolExecution(`Searching for token ${search_param}`);
+              setToolCallId(output.call_id);
 
               append({
                 role: "user",
@@ -164,7 +150,7 @@ export default function VoiceFunctions({
             case "checkWalletBalances":
               const { walletNames } = JSON.parse(output.arguments);
 
-              onToolExecution(`Checking balances of wallet/wallets`);
+              setToolCallId(output.call_id);
 
               append({
                 role: "user",
@@ -184,7 +170,7 @@ export default function VoiceFunctions({
               break;
             case "getActiveWallet":
               // const { search_param } = JSON.parse(output.arguments);
-              onToolExecution(`Getting details of the active wallet`);
+              // onToolExecution(`Getting details of the active wallet`);
 
               append({
                 role: "user",
@@ -206,12 +192,6 @@ export default function VoiceFunctions({
       });
     }
   }, [events]);
-
-  useEffect(() => {
-    if (!isSessionActive) {
-      setFunctionsAdded(false);
-    }
-  }, [isSessionActive]);
 
   return null;
 }

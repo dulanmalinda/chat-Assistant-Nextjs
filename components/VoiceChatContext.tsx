@@ -13,12 +13,14 @@ interface VoiceChatContextValue {
   dataChannel: RTCDataChannel | null;
   setDataChannel: (channel: RTCDataChannel | null) => void;
   sendClientEvent: (message: Record<string, any>) => void;
-  toolProcessing: boolean;
-  setToolProcessing: (value: boolean) => void;
+  voiceToolProcessing: boolean;
+  setVoiceToolProcessing: (value: boolean) => void;
   voiceMessages: VoiceMessage[];
   addVoiceMessage: (message: Omit<VoiceMessage, "createdAt">) => void;
   isOnVoiceMode: boolean;
   setIsOnVoiceMode: (value: boolean) => void;
+  toolCallId: string | null;
+  setToolCallId: (value: string | null) => void;
 }
 
 const VoiceChatContext = createContext<VoiceChatContextValue | undefined>(
@@ -35,9 +37,10 @@ export const useVoiceChat = () => {
 
 export const VoiceChatProvider = ({ children }: { children: ReactNode }) => {
   const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
-  const [toolProcessing, setToolProcessing] = useState(false);
+  const [voiceToolProcessing, setVoiceToolProcessing] = useState(false);
   const [voiceMessages, setVoiceMessages] = useState<VoiceMessage[]>([]);
-  const [isOnVoiceMode, setIsOnVoiceMode] = useState(false); // New state variable
+  const [isOnVoiceMode, setIsOnVoiceMode] = useState(false);
+  const [toolCallId, setToolCallId] = useState<string | null>(null);
 
   const sendClientEvent = (message: Record<string, any>) => {
     if (dataChannel) {
@@ -65,12 +68,14 @@ export const VoiceChatProvider = ({ children }: { children: ReactNode }) => {
     dataChannel,
     setDataChannel,
     sendClientEvent,
-    toolProcessing,
-    setToolProcessing,
+    voiceToolProcessing,
+    setVoiceToolProcessing,
     voiceMessages,
     addVoiceMessage,
     isOnVoiceMode,
     setIsOnVoiceMode,
+    toolCallId,
+    setToolCallId,
   };
 
   return (

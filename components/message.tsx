@@ -59,60 +59,54 @@ const PurePreviewMessage = ({
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
 
-  const { sendClientEvent, toolProcessing, setToolProcessing } = useVoiceChat();
+  const {
+    sendClientEvent,
+    voiceToolProcessing,
+    setVoiceToolProcessing,
+    toolCallId,
+  } = useVoiceChat();
 
-  const sendTextMessageVoiceAPI = (message: string) => {
+  const removeAddressInfo = (input: string): string => {
+    const addressPattern = /\b[13-9A-HJ-NP-Za-km-z]{32,44}\b/g;
+
+    const labelPattern = /\s*-?\s*\**\s*(Address|Private)\s*\**\s*[:]?/gi;
+
+    const lines = input.split("\n");
+    const processedLines = lines.map((line) => {
+      let cleanedLine = line.replace(addressPattern, "");
+      cleanedLine = cleanedLine.replace(labelPattern, "");
+      return cleanedLine.trim();
+    });
+
+    return processedLines
+      .filter((line) => line.length > 0)
+      .join("\n")
+      .trim();
+  };
+
+  const sendToolResultVoiceAPI = (message: string, call_id: string) => {
     const results = {
       type: "conversation.item.create",
       item: {
-        type: "message",
-        role: "user",
-        content: [
-          {
-            type: "input_text",
-            text: message,
-          },
-        ],
+        type: "function_call_output",
+        call_id: call_id,
+        output: message,
       },
     };
 
     sendClientEvent(results);
 
-    const response = {
+    sendClientEvent({
       type: "response.create",
-      response: {
-        instructions: `Do not repeat the message. But user needs to know what task you completed.`,
-      },
-    };
-
-    sendClientEvent(response);
+      // response: {
+      //   instructions:
+      //     "Avoid repeating the information. They are already shown to user.",
+      // },
+    });
   };
 
-  // useEffect(() => {
-  //   if (!message.toolInvocations || !toolProcessing) return;
-
-  //   const hasResult = message.toolInvocations.some(
-  //     (toolInvocation) => toolInvocation.state === "result"
-  //   );
-
-  //   if (hasResult) {
-  //     const toolResult = message.toolInvocations.find(
-  //       (toolInvocation) => toolInvocation.state === "result"
-  //     )?.result;
-
-  //     const delay = setTimeout(() => {
-  //       sendTextMessageVoiceAPI(message.content);
-  //       setToolProcessing(false);
-  //     }, 1000);
-
-  //     return () => {
-  //       clearTimeout(delay);
-  //     };
-  //   }
-  // }, [message.toolInvocations]);
-
   useEffect(() => {
-    if (!message.toolInvocations || !toolProcessing) return;
+    if (!message.toolInvocations || !voiceToolProcessing) return;
 
     const hasResult = message.toolInvocations.some(
       (toolInvocation) => toolInvocation.state === "result"
@@ -120,8 +114,14 @@ const PurePreviewMessage = ({
 
     if (hasResult) {
       const timer = setTimeout(() => {
-        sendTextMessageVoiceAPI(message.content);
-        setToolProcessing(false);
+        if (toolCallId) {
+          sendToolResultVoiceAPI(
+            removeAddressInfo(message.content.toString()),
+            toolCallId
+          );
+        }
+
+        setVoiceToolProcessing(false);
       }, 1000);
 
       return () => clearTimeout(timer);
